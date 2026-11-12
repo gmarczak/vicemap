@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Po podpięciu własnej domeny zamień vicemapa.vercel.app na nią tutaj i w robots.txt. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://vicemapa.vercel.app/</loc></url>
+  <url><loc>https://vicemapa.vercel.app/poradniki/</loc></url>
+  <url><loc>https://vicemapa.vercel.app/poradniki/premiera.html</loc></url>
+  <url><loc>https://vicemapa.vercel.app/poradniki/regiony.html</loc></url>
+  <url><loc>https://vicemapa.vercel.app/poradniki/kody.html</loc></url>
+  <url><loc>https://vicemapa.vercel.app/poradniki/jak-zarobic.html</loc></url>
+</urlset>
