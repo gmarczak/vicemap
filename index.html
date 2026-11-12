@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ViceMapa – interaktywna mapa GTA 6 po polsku</title>
+  <meta name="description" content="Interaktywna mapa GTA 6 po polsku: sklepy, broń, znajdźki i poradniki. Aktualizowana na bieżąco od premiery.">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <a class="logo" href="/">ViceMapa</a>
+    <nav>
+      <a href="/">Mapa</a>
+      <a href="poradniki/jak-zarobic.html">Poradniki</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Interaktywna mapa GTA 6</h1>
+    <p>Sklepy, broń i znajdźki w Leonidzie. Filtry kategorii są w prawym górnym rogu mapy.</p>
+    <div id="map" role="application" aria-label="Interaktywna mapa GTA 6"></div>
+
+    <h2>Poradniki</h2>
+    <ul>
+      <li><a href="poradniki/jak-zarobic.html">GTA 6 – jak szybko zarobić na początku gry</a></li>
+    </ul>
+  </main>
+
+  <footer>
+    Strona fanowska, niepowiązana z Rockstar Games ani Take-Two Interactive.
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="markers.js"></script>
+  <script src="map.js"></script>
+</body>
+</html>

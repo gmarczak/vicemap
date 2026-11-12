@@ -1,0 +1,7 @@
+# Klucze i sekrety zostają tylko lokalnie
+.env
+.env.*
+*.key
+*.pem
+.vercel
+.claude/
