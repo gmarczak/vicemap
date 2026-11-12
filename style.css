@@ -1,27 +1,189 @@
 :root {
   --tlo: #12101c;
   --panel: #1d1a2c;
+  --panel-2: #262238;
+  --linia: #3a3558;
   --tekst: #f1eef8;
+  --tekst-2: #b9b3d1;
   --akcent: #ff5fa2;
+  --akcent-2: #4fc3f7;
+  --promien: 10px;
+  --wys-naglowka: 56px;
 }
 * { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   background: var(--tlo);
   color: var(--tekst);
-  font: 16px/1.6 system-ui, sans-serif;
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 a { color: var(--akcent); }
-header {
+a:hover { color: #ff8cbd; }
+img { max-width: 100%; height: auto; }
+h1, h2, h3 { line-height: 1.25; }
+:focus-visible { outline: 2px solid var(--akcent-2); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.ukryta-etykieta {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* --- Nagłówek i stopka --- */
+.naglowek, header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  gap: 12px;
+  min-height: var(--wys-naglowka);
+  padding: 8px 16px;
   background: var(--panel);
+  border-bottom: 1px solid var(--linia);
 }
-.logo { font-weight: 700; font-size: 1.25rem; text-decoration: none; }
-nav a { margin-left: 16px; }
-main { max-width: 1100px; margin: 0 auto; padding: 16px; }
-h1 { line-height: 1.2; }
-#map { height: 70vh; min-height: 320px; background: #0b0a12; border-radius: 8px; }
-footer { padding: 24px 16px; text-align: center; font-size: .85rem; opacity: .7; }
+.logo { font-weight: 800; font-size: 1.3rem; text-decoration: none; color: var(--tekst); letter-spacing: .02em; }
+.logo span { color: var(--akcent); }
+nav { display: flex; gap: 16px; flex-wrap: wrap; }
+nav a { text-decoration: none; color: var(--tekst-2); }
+nav a[aria-current="page"], nav a:hover { color: var(--tekst); }
+.stopka, footer {
+  padding: 24px 16px 96px;
+  text-align: center;
+  font-size: .85rem;
+  color: var(--tekst-2);
+  border-top: 1px solid var(--linia);
+}
+.stopka p { margin: 6px 0; }
+
+/* --- Treść stron --- */
+main, .tresc { max-width: 820px; margin: 0 auto; padding: 16px; }
+article h2 { margin-top: 1.8em; }
+.stan { color: var(--tekst-2); font-style: italic; }
+.okruszki { font-size: .85rem; color: var(--tekst-2); margin-bottom: 8px; }
+.okruszki a { color: var(--tekst-2); }
+.lista-poradnikow li { margin: 6px 0; }
+table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: .95rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--linia); vertical-align: top; }
+th { color: var(--tekst-2); font-weight: 600; }
+.ramka {
+  background: var(--panel); border: 1px solid var(--linia); border-radius: var(--promien);
+  padding: 14px 16px; margin: 1.5em 0;
+}
+.ramka h2, .ramka h3 { margin-top: 0; }
+.ramka--afiliacja .uwaga { font-size: .8rem; color: var(--tekst-2); margin-bottom: 0; }
+.zrodla { font-size: .85rem; color: var(--tekst-2); }
+.reklama { margin: 1.5em 0; min-height: 100px; text-align: center; }
+
+/* --- Przyciski i formularze --- */
+.przycisk {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 40px; padding: 8px 14px;
+  font: inherit; font-weight: 600; color: var(--tekst); text-decoration: none;
+  background: var(--panel-2); border: 1px solid var(--linia); border-radius: 999px; cursor: pointer;
+}
+.przycisk:hover { border-color: var(--akcent); color: var(--tekst); }
+.przycisk--glowny { background: var(--akcent); border-color: var(--akcent); color: #1a0b14; }
+.przycisk--glowny:hover { background: #ff7db4; color: #1a0b14; }
+.przycisk--maly { min-height: 32px; padding: 4px 10px; font-size: .85rem; }
+.link-przycisk { background: none; border: 0; padding: 0; font: inherit; font-size: .85rem; color: var(--tekst-2); text-decoration: underline; cursor: pointer; }
+input[type="text"], input[type="search"], input[type="email"], select, textarea {
+  width: 100%; padding: 10px 12px; font: inherit; color: var(--tekst);
+  background: var(--tlo); border: 1px solid var(--linia); border-radius: var(--promien);
+}
+textarea { min-height: 120px; resize: vertical; }
+.formularz label { display: block; margin: 14px 0 6px; font-weight: 600; }
+.formularz .pomoc { font-size: .85rem; color: var(--tekst-2); margin: 4px 0 0; }
+.komunikat { padding: 12px 14px; border-radius: var(--promien); margin: 16px 0; }
+.komunikat--ok { background: #163a2a; border: 1px solid #2e7d5b; }
+.komunikat--blad { background: #3a1620; border: 1px solid #a33b57; }
+
+/* --- Układ strony mapy --- */
+.uklad-mapy { display: flex; height: calc(100vh - var(--wys-naglowka)); height: calc(100dvh - var(--wys-naglowka)); }
+.mapa-kontener { position: relative; flex: 1; min-width: 0; }
+#map { position: absolute; inset: 0; background: #0b0a12; }
+.blad-mapy { position: absolute; z-index: 1000; inset: auto 16px 16px; padding: 12px; background: #3a1620; border-radius: var(--promien); }
+
+.panel {
+  width: 320px; flex: none; overflow-y: auto;
+  padding: 14px 16px 24px; background: var(--panel); border-right: 1px solid var(--linia);
+}
+.panel__tytul { font-size: 1rem; margin: 18px 0 8px; }
+.panel__przyciski { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+.panel__uwaga { font-size: .8rem; color: var(--tekst-2); }
+.przelacznik { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+.szukaj { margin-bottom: 6px; }
+.wyniki { list-style: none; margin: 0; padding: 0; }
+.wyniki button {
+  display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px; text-align: left;
+  font: inherit; color: var(--tekst); background: none; border: 0; border-radius: 8px; cursor: pointer;
+}
+.wyniki button:hover { background: var(--panel-2); }
+.wyniki__brak { padding: 8px; color: var(--tekst-2); font-size: .9rem; }
+
+.postep { margin: 14px 0 4px; }
+.postep__tekst { font-size: .9rem; margin-bottom: 6px; }
+.postep__pasek { height: 8px; border-radius: 999px; background: var(--panel-2); overflow: hidden; }
+.postep__pasek span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--akcent), var(--akcent-2)); transition: width .3s; }
+
+.filtry { list-style: none; margin: 0; padding: 0; }
+.filtr { display: flex; align-items: center; gap: 10px; padding: 6px 4px; border-radius: 8px; cursor: pointer; }
+.filtr:hover { background: var(--panel-2); }
+.filtr__nazwa { flex: 1; }
+.filtr__licznik { font-size: .8rem; color: var(--tekst-2); font-variant-numeric: tabular-nums; }
+
+.przelacz-panel { display: none; }
+
+/* --- Znaczniki --- */
+.pin {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 50%;
+  font: 700 14px/1 system-ui, sans-serif; color: #12101c;
+  background: var(--kolor, #ccc); border: 2px solid #12101c;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .6);
+}
+.pin--maly { width: 22px; height: 22px; font-size: 11px; box-shadow: none; flex: none; }
+.pin--zaliczone { opacity: .55; filter: grayscale(.6); }
+
+/* --- Dymki Leafleta w ciemnym motywie --- */
+.leaflet-container { font: inherit; background: #0b0a12; }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel); color: var(--tekst); }
+.leaflet-popup-content { margin: 12px 14px; }
+.leaflet-container a.leaflet-popup-close-button { color: var(--tekst-2); }
+.leaflet-bar a, .leaflet-bar a:hover { background: var(--panel); color: var(--tekst); border-color: var(--linia); }
+.popup__kategoria { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--tekst-2); }
+.popup__nazwa { display: block; font-size: 1.05rem; margin: 2px 0 4px; }
+.popup p { margin: 4px 0 8px; }
+.popup__uwaga { font-size: .8rem; color: var(--tekst-2); }
+.popup__zaliczone { display: flex; gap: 6px; align-items: center; margin: 8px 0; font-weight: 600; }
+.popup__akcje { display: flex; flex-wrap: wrap; gap: 6px; }
+.popup code { display: block; margin: 6px 0; padding: 6px; font-size: .75rem; background: var(--tlo); border-radius: 6px; word-break: break-all; }
+.tryb-edytora #map { cursor: crosshair; }
+
+/* --- Baner zgód --- */
+.zgody {
+  position: fixed; z-index: 2000; left: 12px; right: 12px; bottom: 12px; max-width: 560px; margin: 0 auto;
+  padding: 14px 16px; background: var(--panel); border: 1px solid var(--linia); border-radius: var(--promien);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .5);
+}
+.zgody p { margin: 0 0 10px; font-size: .9rem; }
+.zgody__przyciski { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+/* --- Telefon: mapa na cały ekran, panel jako wysuwana szuflada --- */
+@media (max-width: 760px) {
+  .uklad-mapy { display: block; position: relative; }
+  .mapa-kontener { height: 100%; }
+  .panel {
+    position: absolute; z-index: 1100; left: 0; right: 0; bottom: 0; width: auto; max-height: 75%;
+    border-right: 0; border-top: 1px solid var(--linia); border-radius: 16px 16px 0 0;
+    transform: translateY(105%); transition: transform .25s ease; box-shadow: 0 -8px 30px rgba(0, 0, 0, .5);
+    padding-bottom: 80px;
+  }
+  .panel--otwarty { transform: none; }
+  .przelacz-panel {
+    display: inline-flex; position: absolute; z-index: 1200; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom));
+    transform: translateX(-50%); box-shadow: 0 4px 16px rgba(0, 0, 0, .5);
+  }
+  nav { gap: 12px; font-size: .95rem; }
+}
+
+/* --- Mała mapa na stronie znacznika --- */
+.mini-mapa { height: 320px; border-radius: var(--promien); border: 1px solid var(--linia); margin: 16px 0; }
+.leaflet-container .popup a.przycisk { color: var(--tekst); }

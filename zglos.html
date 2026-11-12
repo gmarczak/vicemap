@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zgłoś znacznik na mapie GTA 6 | ViceMap</title>
+  <meta name="description" content="Znalazłeś w GTA 6 miejsce, którego nie ma na mapie, albo błąd w opisie? Zgłoś je – sprawdzimy i dodamy na mapę ViceMap.">
+  <link rel="canonical" href="https://vicemap.pl/zglos.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="ViceMap">
+  <meta property="og:title" content="Zgłoś znacznik na mapie GTA 6 | ViceMap">
+  <meta property="og:description" content="Znalazłeś w GTA 6 miejsce, którego nie ma na mapie, albo błąd w opisie? Zgłoś je – sprawdzimy i dodamy na mapę ViceMap.">
+  <meta property="og:url" content="https://vicemap.pl/zglos.html">
+  <meta property="og:image" content="https://vicemap.pl/img/og.png">
+  <meta name="theme-color" content="#12101c">
+  <link rel="icon" href="/img/ikona.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/img/ikona-180.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="naglowek">
+    <a class="logo" href="/">Vice<span>Map</span></a>
+    <nav>
+      <a href="/">Mapa</a>
+      <a href="/poradniki/">Poradniki</a>
+      <a href="/zglos.html" aria-current="page">Zgłoś</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Zgłoś znacznik</h1>
+    <p>Znalazłeś w grze coś, czego nie ma na mapie, albo widzisz błąd? Opisz to – sprawdzimy i dodamy. Nie wysyłaj spoilerów fabuły w opisie.</p>
+
+    <div id="komunikat" class="komunikat" role="status" hidden></div>
+
+    <form id="formularz-zgloszenia" class="formularz" novalidate>
+      <label for="typ">Rodzaj zgłoszenia</label>
+      <select id="typ" name="typ">
+        <option value="nowy">Nowe miejsce na mapie</option>
+        <option value="poprawka">Poprawka istniejącego znacznika</option>
+        <option value="blad">Błąd na stronie</option>
+      </select>
+
+      <label for="kategoria">Kategoria</label>
+      <select id="kategoria" name="kategoria">
+        <option value="">– wybierz –</option>
+      </select>
+
+      <label for="nazwa">Nazwa miejsca</label>
+      <input id="nazwa" name="nazwa" type="text" maxlength="120" placeholder="np. sklep z bronią przy plaży">
+
+      <label for="opis">Opis i jak tam dojść</label>
+      <textarea id="opis" name="opis" maxlength="2000" required placeholder="Gdzie dokładnie jest, co tam można zrobić, jak dojechać."></textarea>
+
+      <label for="znacznik_id">Identyfikator znacznika (przy poprawce)</label>
+      <input id="znacznik_id" name="znacznik_id" type="text" maxlength="100">
+      <p class="pomoc">Uzupełnia się sam, gdy klikniesz „Zgłoś poprawkę” w dymku na mapie.</p>
+
+      <div class="formularz__wspolrzedne">
+        <label for="x">Współrzędne na mapie (opcjonalnie)</label>
+        <input id="x" name="x" type="text" inputmode="numeric" placeholder="x" style="max-width:120px;display:inline-block">
+        <input id="y" name="y" type="text" inputmode="numeric" placeholder="y" style="max-width:120px;display:inline-block">
+      </div>
+
+      <label for="kontakt">Nick lub e-mail (opcjonalnie)</label>
+      <input id="kontakt" name="kontakt" type="text" maxlength="120">
+      <p class="pomoc">Tylko jeśli chcesz, żebyśmy mogli dopytać lub podziękować. Szczegóły w <a href="/polityka-prywatnosci.html">polityce prywatności</a>.</p>
+
+      <div aria-hidden="true" style="position:absolute;left:-9999px">
+        <label for="strona_www">Nie wypełniaj tego pola</label>
+        <input id="strona_www" name="strona_www" type="text" tabindex="-1" autocomplete="off">
+      </div>
+
+      <p><button type="submit" class="przycisk przycisk--glowny">Wyślij zgłoszenie</button></p>
+    </form>
+  </main>
+
+  <footer class="stopka">
+    <p>Nieoficjalna strona fanowska, niepowiązana z Rockstar Games ani Take-Two Interactive. Grand Theft Auto jest znakiem towarowym Take-Two Interactive.</p>
+    <p>
+      <a href="/polityka-prywatnosci.html">Polityka prywatności</a> ·
+      <a href="/zglos.html">Zgłoś znacznik</a> ·
+      <a href="#" data-zmien-zgode>Ustawienia cookie</a>
+      <a href="#" data-wsparcie hidden> · Postaw kawę ☕</a>
+    </p>
+  </footer>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/zglos.js"></script>
+  <script src="/js/strona.js"></script>
+</body>
+</html>
