@@ -31,6 +31,9 @@ for (const z of znaczniki) {
   if (!katPoId.has(z.kategoria)) bledy.push(`${gdzie}: nieznana kategoria "${z.kategoria}"`);
   if (!z.nazwa) bledy.push(`${gdzie}: brak nazwy`);
   if (!Number.isFinite(z.x) || !Number.isFinite(z.y)) bledy.push(`${gdzie}: x i y muszą być liczbami`);
+  if (z.status && !["potwierdzone", "spolecznosc"].includes(z.status)) bledy.push(`${gdzie}: status to "potwierdzone" albo "spolecznosc"`);
+  if (z.dodano && !/^\d{4}-\d{2}-\d{2}$/.test(z.dodano)) bledy.push(`${gdzie}: dodano w formacie RRRR-MM-DD`);
+  if (z.zrodlo && !/^https?:\/\//.test(z.zrodlo)) bledy.push(`${gdzie}: zrodlo musi być adresem http(s)`);
 }
 if (bledy.length) {
   console.error("Błędy w danych:\n- " + bledy.join("\n- "));
@@ -40,8 +43,9 @@ if (bledy.length) {
 // --- Szablon strony ---
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-function strona({ sciezka, tytul, opis, tresc, ld, glowa = "", skrypty = "" }) {
+function strona({ sciezka, tytul, opis, tresc, ld, glowa = "", skrypty = "", noindex = false }) {
   const url = DOMENA + "/" + sciezka;
+  if (noindex) glowa = `\n  <meta name="robots" content="noindex">` + glowa;
   return `<!doctype html>
 <html lang="pl">
 <head>
@@ -118,10 +122,10 @@ for (const z of publiczne) {
   const tresc = `${okruszki(...sciezkaOkr)}
     <article>
       <h1>GTA 6: ${esc(z.nazwa)} – gdzie jest</h1>
-      <p class="stan">${esc(kat.nazwa)}${z.region ? " · " + esc(z.region) : ""}</p>
+      <p class="stan">${esc(kat.nazwa)}${z.region ? " · " + esc(z.region) : ""} · ${z.status === "potwierdzone" ? "potwierdzone" : "od społeczności"}${z.autor ? " · znalazł: " + esc(z.autor) : ""}${z.dodano ? " · dodano " + esc(z.dodano) : ""}</p>
       ${z.opis ? `<p>${esc(z.opis)}</p>` : ""}
       <div id="mini-mapa" class="mini-mapa" data-x="${z.x}" data-y="${z.y}" data-kolor="${esc(kat.kolor)}" data-znak="${esc(kat.znak)}"></div>
-      <p><a class="przycisk przycisk--glowny" href="/#z=${encodeURIComponent(z.id)}">Pokaż na pełnej mapie</a>
+${/^https?:\/\//.test(z.zrodlo || "") ? `      <p class="zrodla">Źródło: <a href="${esc(z.zrodlo)}" rel="nofollow noopener">${esc(new URL(z.zrodlo).hostname)}</a></p>\n` : ""}      <p><a class="przycisk przycisk--glowny" href="/#z=${encodeURIComponent(z.id)}">Pokaż na pełnej mapie</a>
          <a class="przycisk" href="/zglos.html?z=${encodeURIComponent(z.id)}">Zgłoś poprawkę</a></p>
 ${inne.length ? `      <h2>Inne: ${esc(kat.nazwa.toLowerCase())}</h2>
       <ul>
@@ -150,7 +154,7 @@ for (const kat of kategorie) {
   const tresc = `${okruszki(...sciezkaOkr)}
     <h1>GTA 6: ${esc(kat.nazwa.toLowerCase())} – mapa i lista (${lista.length})</h1>
     <p>${esc(kat.opis || "")} Na mapie ViceMap zaznaczysz każde miejsce jako zaliczone i sprawdzisz, ile brakuje do 100%.</p>
-    <p><a class="przycisk przycisk--glowny" href="/">Otwórz mapę</a></p>
+    <p><a class="przycisk przycisk--glowny" href="/?kategoria=${kat.id}">Pokaż ${esc(kat.nazwa.toLowerCase())} na mapie</a> <a class="przycisk" href="/lista-100.html">Lista 100%</a></p>
     <table>
       <thead><tr><th>Nazwa</th><th>Opis</th></tr></thead>
       <tbody>
@@ -167,6 +171,83 @@ ${lista.map((z) => `        <tr><td><a href="/znaczniki/${z.id}.html">${esc(z.na
     ] }
   }));
   wygenerowane.push(sciezka);
+}
+
+// --- Lista 100%: wszystkie nie-spoilerowe znaczniki, odhaczanie zsynchronizowane z mapą ---
+{
+  const naLiscie = znaczniki.filter((z) => !katPoId.get(z.kategoria).spoiler);
+  const sekcje = kategorie.filter((k) => !k.spoiler).map((kat) => {
+    const lista = naLiscie.filter((z) => z.kategoria === kat.id).sort((a, b) => a.nazwa.localeCompare(b.nazwa, "pl"));
+    if (!lista.length) return "";
+    return `    <h2 id="${kat.id}">${esc(kat.nazwa)} <span class="lista-licznik" data-kategoria="${kat.id}"></span></h2>
+    <table class="lista-100">
+      <thead><tr><th><span class="ukryta-etykieta">Zaliczone</span></th><th>Nazwa</th><th>Region</th><th>Opis</th></tr></thead>
+      <tbody>
+${lista.map((z) => `        <tr data-id="${esc(z.id)}" data-kategoria="${kat.id}"><td><input type="checkbox" aria-label="Zaliczone: ${esc(z.nazwa)}"></td><td><a href="${z.przyklad ? "/#z=" + encodeURIComponent(z.id) : "/znaczniki/" + z.id + ".html"}">${esc(z.nazwa)}</a>${z.przyklad ? ' <span class="etykieta etykieta--przyklad">przykład</span>' : ""}</td><td>${esc(z.region || "")}</td><td>${esc(z.opis || "")}</td></tr>`).join("\n")}
+      </tbody>
+    </table>`;
+  }).filter(Boolean).join("\n\n");
+  const prawdziwe = publiczne.length > 0;
+  await writeFile(join(ROOT, "lista-100.html"), strona({
+    sciezka: "lista-100.html",
+    tytul: "GTA 6 – lista do 100%: wszystkie znajdźki i miejsca | ViceMap",
+    opis: "Lista wszystkich miejsc w GTA 6 do zaliczenia na 100%: znajdźki, kryjówki, sklepy, aktywności. Odhaczaj po polsku, postęp synchronizuje się z mapą.",
+    noindex: !prawdziwe,
+    tresc: `${okruszki(["/", "Mapa"], [null, "Lista 100%"])}
+    <h1>GTA 6 – lista do 100%</h1>
+    <p>Odhacz miejsca, które masz już zaliczone – lista korzysta z tego samego zapisu co <a href="/">mapa</a>, więc postęp widać w obu miejscach. Misje fabularne pominęliśmy, żeby nie zdradzać fabuły.</p>
+    <div class="ramka"><strong id="lista-postep">Zaliczone: 0 z 0</strong> <span class="stan" id="lista-profil"></span></div>
+${sekcje || "    <p>Pierwsze miejsca dodamy w dniu premiery, 19 listopada 2026.</p>"}`,
+    ld: { "@context": "https://schema.org", "@type": "CollectionPage", name: "GTA 6 – lista do 100%", inLanguage: "pl", url: DOMENA + "/lista-100.html" },
+    skrypty: `\n  <script src="/js/postep.js"></script>\n  <script src="/js/lista.js"></script>`
+  }));
+  if (prawdziwe) wygenerowane.push("lista-100.html");
+}
+
+// --- Ranking odkrywców (podpisy z zatwierdzonych zgłoszeń) ---
+{
+  const ranking = new Map();
+  for (const z of publiczne) if (z.autor) ranking.set(z.autor, (ranking.get(z.autor) || 0) + 1);
+  const sciezka = "odkrywcy.html";
+  if (ranking.size) {
+    const wiersze = [...ranking].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pl"));
+    await writeFile(join(ROOT, sciezka), strona({
+      sciezka, noindex: true,
+      tytul: "Ranking odkrywców | ViceMap",
+      opis: "Gracze, którzy zgłosili najwięcej miejsc na mapę GTA 6 ViceMap.",
+      tresc: `${okruszki(["/", "Mapa"], [null, "Ranking odkrywców"])}
+    <h1>Ranking odkrywców</h1>
+    <p>Dziękujemy wszystkim, którzy zgłaszają miejsca na mapę. <a href="/zglos.html">Zgłoś swoje znalezisko</a> i podpisz je nickiem.</p>
+    <table>
+      <thead><tr><th>#</th><th>Odkrywca</th><th>Dodane miejsca</th></tr></thead>
+      <tbody>
+${wiersze.map(([kto, ile], i) => `        <tr><td>${i + 1}</td><td>${esc(kto)}</td><td>${ile}</td></tr>`).join("\n")}
+      </tbody>
+    </table>`,
+      ld: { "@context": "https://schema.org", "@type": "WebPage", name: "Ranking odkrywców", inLanguage: "pl" }
+    }));
+  } else if (existsSync(join(ROOT, sciezka))) {
+    await rm(join(ROOT, sciezka));
+  }
+}
+
+// --- Nowe znaleziska na stronie głównej (statycznie, żeby widział je też Google) ---
+{
+  const nowe = publiczne.filter((z) => z.dodano).sort((a, b) => b.dodano.localeCompare(a.dodano) || a.nazwa.localeCompare(b.nazwa, "pl")).slice(0, 10);
+  const ostatnia = nowe.length ? nowe[0].dodano : null;
+  const blok = nowe.length
+    ? `    <h2>Nowe znaleziska</h2>
+    <p class="stan">Ostatnia aktualizacja mapy: ${ostatnia}. Wszystkich miejsc: ${publiczne.length}.${existsSync(join(ROOT, "odkrywcy.html")) ? ' <a href="/odkrywcy.html">Ranking odkrywców</a>' : ""}</p>
+    <ul class="nowosci">
+${nowe.map((z) => { const k = katPoId.get(z.kategoria); return `      <li><span class="pin pin--maly" style="--kolor:${k.kolor}">${esc(k.znak)}</span><a href="/znaczniki/${z.id}.html">${esc(z.nazwa)}</a><time datetime="${z.dodano}">${z.dodano}</time></li>`; }).join("\n")}
+    </ul>`
+    : `    <h2>Nowe znaleziska</h2>
+    <p>Pierwsze prawdziwe miejsca dodamy w dniu premiery, 19 listopada 2026. Zajrzyj wtedy albo <a href="/zglos.html">zgłoś własne znalezisko</a>.</p>`;
+  const plik = join(ROOT, "index.html");
+  const html = await readFile(plik, "utf8");
+  const nowy = html.replace(/<!-- NOWOSCI:START -->[\s\S]*?<!-- NOWOSCI:END -->/, `<!-- NOWOSCI:START -->\n${blok}\n    <!-- NOWOSCI:END -->`);
+  if (nowy === html && !html.includes("NOWOSCI:START")) console.warn("Uwaga: w index.html brak znaczników NOWOSCI:START/END.");
+  await writeFile(plik, nowy);
 }
 
 // --- Sprzątanie stron po usuniętych znacznikach i kategoriach ---

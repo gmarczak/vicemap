@@ -49,6 +49,7 @@
       opis: form.elements.opis.value.trim(),
       x: naLiczbe(form.elements.x.value),
       y: naLiczbe(form.elements.y.value),
+      podpis: form.elements.podpis.value.trim() || null,
       kontakt: form.elements.kontakt.value.trim() || null
     };
     if (dane.opis.length < 10) {

@@ -50,18 +50,44 @@
       </div>
 
       <h2 class="panel__tytul">Kategorie</h2>
+      <p class="panel__uwaga">Strzałka › przy kategorii pokazuje najbliższe niezaliczone miejsce.</p>
       <ul id="filtry" class="filtry"></ul>
+      <div class="panel__region" hidden>
+        <label for="region" class="panel__tytul panel__tytul--maly">Region</label>
+        <select id="region"><option value="">Cała Leonida</option></select>
+      </div>
       <div class="panel__przyciski">
         <button type="button" id="pokaz-wszystkie" class="przycisk przycisk--maly">Pokaż wszystkie</button>
         <button type="button" id="ukryj-wszystkie" class="przycisk przycisk--maly">Ukryj wszystkie</button>
       </div>
       <label class="przelacznik"><input type="checkbox" id="ukryj-zaliczone"> Ukryj zaliczone</label>
-      <p class="panel__uwaga">Postęp zapisuje się w tej przeglądarce. Kategoria „Misje fabularne” jest domyślnie ukryta, żeby nie zdradzać fabuły.</p>
-      <button type="button" id="resetuj-postep" class="link-przycisk">Wyczyść postęp</button>
+      <button type="button" id="dodaj-pinezke" class="przycisk przycisk--maly przycisk--pelny">+ Dodaj własną pinezkę</button>
+
+      <h2 class="panel__tytul">Mój postęp</h2>
+      <label for="profil" class="ukryta-etykieta">Profil przejścia</label>
+      <select id="profil"></select>
+      <div class="panel__przyciski">
+        <button type="button" id="profil-nowy" class="przycisk przycisk--maly">Nowy profil</button>
+        <button type="button" id="profil-nazwa" class="przycisk przycisk--maly">Zmień nazwę</button>
+        <button type="button" id="profil-usun" class="przycisk przycisk--maly">Usuń</button>
+      </div>
+      <div class="panel__przyciski">
+        <button type="button" id="udostepnij" class="przycisk przycisk--maly przycisk--glowny">Udostępnij postęp</button>
+        <a class="przycisk przycisk--maly" href="/lista-100.html">Lista 100%</a>
+      </div>
+      <div class="panel__przyciski">
+        <button type="button" id="eksport" class="przycisk przycisk--maly">Zapisz kopię</button>
+        <button type="button" id="import" class="przycisk przycisk--maly">Wczytaj kopię</button>
+        <input type="file" id="import-plik" accept="application/json,.json" hidden>
+      </div>
+      <p class="panel__uwaga">Postęp, notatki i własne pinezki zapisują się tylko w tej przeglądarce. Zrób kopię, zanim wyczyścisz przeglądarkę albo zmienisz telefon. Kategoria „Misje fabularne” jest domyślnie ukryta, żeby nie zdradzać fabuły. Skrót: <kbd>/</kbd> – szukaj.</p>
+      <button type="button" id="resetuj-postep" class="link-przycisk">Wyczyść zaliczone w tym profilu</button>
     </aside>
 
     <div class="mapa-kontener">
       <div id="map" role="application" aria-label="Interaktywna mapa GTA 6"></div>
+      <div id="komunikat-mapy" class="komunikat-mapy" role="status" hidden></div>
+      <div id="odliczanie-mapa" class="odliczanie-mapa"></div>
       <button type="button" id="przelacz-panel" class="przycisk przycisk--glowny przelacz-panel" aria-controls="panel" aria-expanded="false">Filtry i szukaj</button>
     </div>
   </div>
@@ -71,6 +97,11 @@
     <p>ViceMap to nieoficjalna mapa stanu Leonida z GTA 6: kryjówki, sklepy, broń, pojazdy, znajdźki i aktywności poboczne. Zaznaczaj zaliczone miejsca, a licznik pokaże, ile brakuje do 100%. Mapa działa na telefonie, więc możesz ją mieć obok konsoli.</p>
     <p><strong>Stan na 12 listopada 2026:</strong> GTA 6 wychodzi 19 listopada 2026. Znaczniki na mapie są przykładowe – prawdziwe lokalizacje dodajemy od dnia premiery. <a href="/zglos.html">Znalazłeś coś w grze? Zgłoś znacznik.</a></p>
 
+    <!-- NOWOSCI:START -->
+    <h2>Nowe znaleziska</h2>
+    <p>Pierwsze prawdziwe miejsca dodamy w dniu premiery, 19 listopada 2026. Zajrzyj wtedy albo <a href="/zglos.html">zgłoś własne znalezisko</a>.</p>
+    <!-- NOWOSCI:END -->
+
     <h2>Poradniki</h2>
     <ul class="lista-poradnikow">
       <li><a href="/poradniki/premiera.html">GTA 6 – data premiery, godzina i platformy</a></li>
@@ -79,6 +110,7 @@
       <li><a href="/poradniki/tryb-online.html">GTA 6 Online – czy jest multiplayer na premierę</a></li>
       <li><a href="/poradniki/regiony.html">GTA 6 mapa – regiony Leonidy</a></li>
       <li><a href="/poradniki/kody.html">GTA 6 kody</a></li>
+      <li><a href="/lista-100.html">GTA 6 – lista do 100%</a></li>
     </ul>
   </main>
 
@@ -94,6 +126,7 @@
 
   <script src="/js/config.js"></script>
   <script src="/vendor/leaflet/leaflet.js"></script>
+  <script src="/js/postep.js"></script>
   <script src="/js/map.js"></script>
   <script src="/js/strona.js"></script>
 </body>

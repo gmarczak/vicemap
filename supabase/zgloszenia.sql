@@ -12,9 +12,13 @@ create table if not exists public.zgloszenia (
   opis         text not null check (char_length(opis) between 10 and 2000),
   x            integer check (x between -100000 and 100000),
   y            integer check (y between -100000 and 100000),
-  kontakt      text check (char_length(kontakt) <= 120),
+  podpis       text check (char_length(podpis) <= 40),   -- publiczny nick przy znaczniku
+  kontakt      text check (char_length(kontakt) <= 120), -- prywatny kontakt, nie publikujemy
   status       text not null default 'nowe' check (status in ('nowe', 'dodane', 'odrzucone'))
 );
+
+-- Jeśli tabela powstała wcześniej bez podpisu:
+alter table public.zgloszenia add column if not exists podpis text check (char_length(podpis) <= 40);
 
 alter table public.zgloszenia enable row level security;
 
@@ -28,4 +32,4 @@ create policy "anon dodaje zgloszenia"
 
 -- Brak polityk select/update/delete = odwiedzający nie widzą ani nie zmieniają cudzych zgłoszeń.
 revoke select, update, delete on public.zgloszenia from anon, authenticated;
-grant insert (typ, znacznik_id, kategoria, nazwa, opis, x, y, kontakt) on public.zgloszenia to anon;
+grant insert (typ, znacznik_id, kategoria, nazwa, opis, x, y, podpis, kontakt) on public.zgloszenia to anon;

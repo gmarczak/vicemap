@@ -20,7 +20,9 @@ i otwórz http://localhost:3000.
 | `data/kategorie.json` | Kategorie: nazwa, kolor, litera na pinezce, `spoiler: true` = domyślnie ukryta |
 | `data/znaczniki.json` | Wszystkie znaczniki na mapie |
 | `js/config.js` | Ustawienia: obraz mapy, Supabase, AdSense, wsparcie, linki partnerskie |
-| `js/map.js` | Mapa: filtry, wyszukiwarka, tracker postępu, linki `#z=id`, tryb edytora |
+| `js/map.js` | Mapa: filtry, regiony, wyszukiwarka, tracker, notatki, własne pinezki, profile, karta postępu, tryb edytora |
+| `js/postep.js` | Zapis postępu w przeglądarce (profile, zaliczone, notatki, pinezki, kopia zapasowa) |
+| `js/lista.js` | Odhaczanie na liście 100% |
 | `js/strona.js` | Wspólne dla wszystkich stron: baner zgód, reklamy po zgodzie, linki partnerskie |
 | `js/zglos.js`, `zglos.html` | Formularz zgłoszeń znaczników |
 | `poradniki/` | Poradniki (pisane ręcznie) |
@@ -35,12 +37,31 @@ i otwórz http://localhost:3000.
 3. Wklej go do `data/znaczniki.json` i uzupełnij:
    - `id` – unikalny, małe litery, cyfry i myślniki, bez polskich znaków (np. `sklep-z-bronia-ocean-beach`). **Nie zmieniaj go później** – na nim opiera się zapisany postęp graczy i adres strony znacznika.
    - `kategoria` – `id` z `data/kategorie.json`
-   - `nazwa`, `opis`, opcjonalnie `region`
-4. Uruchom `npm run build` (albo `node scripts/build.mjs`). Skrypt sprawdzi dane, a przy błędzie się zatrzyma i napisze, co poprawić.
+   - `nazwa`, `opis`
+   - opcjonalnie:
+     - `region` – np. `Vice City`; z tych wartości powstaje filtr regionów na mapie
+     - `status` – `potwierdzone` (sprawdzone osobiście) albo `spolecznosc` (ze zgłoszenia, jeszcze niesprawdzone)
+     - `dodano` – data `RRRR-MM-DD`; najnowsze trafiają do sekcji „Nowe znaleziska” na stronie głównej
+     - `autor` – podpis ze zgłoszenia; pokazuje się przy znaczniku i w rankingu odkrywców (`odkrywcy.html`)
+     - `zrodlo` – adres `https://…`, jeśli informacja pochodzi z innego miejsca
+4. Uruchom `npm run build` (albo `node scripts/build.mjs`). Skrypt sprawdzi dane, a przy błędzie się zatrzyma i napisze, co poprawić. Odświeży też „Nowe znaleziska” w `index.html`, `lista-100.html`, `odkrywcy.html` i `sitemap.xml`.
 
 Znaczniki z `"przyklad": true` widać na mapie, ale nie dostają własnych stron ani wpisu w sitemap. **Po premierze usuń przykładowe znaczniki** z `data/znaczniki.json`.
 
 Znaczniki z kategorii ze spoilerami (misje) też nie dostają stron, żeby nie zdradzać fabuły w Google.
+
+## Co potrafi mapa (dla graczy)
+
+- filtry kategorii i regionów, wyszukiwarka (też po własnych notatkach), skrót `/`
+- „Zaliczone” przy każdym miejscu, licznik postępu, „Ukryj zaliczone”, strzałka › do najbliższego niezaliczonego
+- własne notatki do znaczników i własne pinezki
+- do 5 profili przejść, kopia zapasowa postępu do pliku i wczytywanie kopii
+- „Udostępnij postęp” – obrazek z wynikiem do wrzucenia na social media
+- lista 100% (`lista-100.html`) zsynchronizowana z mapą
+- linki do miejsc (`/#z=id`) i do widoku kategorii (`/?kategoria=bron` albo `/?kategoria=bron,sklepy`)
+- odliczanie do premiery, które znika samo 19 listopada o północy
+
+Wszystko zapisuje się tylko w przeglądarce gracza – bez kont i bez wysyłania danych.
 
 ## Podmiana mapy po premierze
 

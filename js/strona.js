@@ -77,6 +77,35 @@
     else if (zgoda !== "nie") pokazBaner();
   }
 
+  // --- Odliczanie do premiery (po premierze znika samo) ---
+  const PREMIERA = Date.parse("2026-11-19T00:00:00+01:00"); // północ czasu polskiego
+  const naglowek = document.querySelector("header");
+  if (naglowek && Date.now() < PREMIERA) {
+    const pasek = document.createElement("div");
+    pasek.className = "odliczanie";
+    pasek.setAttribute("role", "timer");
+    const tekst = document.createElement("strong");
+    const data = document.createElement("span");
+    data.className = "odliczanie__data";
+    data.textContent = " · 19 listopada, 00:00";
+    pasek.append("Premiera GTA 6 za ", tekst, data);
+    const odmiana = (n, a, b, c) => n + " " + (n === 1 ? a : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? b : c);
+    const tik = () => {
+      const r = PREMIERA - Date.now();
+      if (r <= 0) { pasek.remove(); return; }
+      const d = Math.floor(r / 864e5), h = Math.floor(r / 36e5) % 24, m = Math.floor(r / 6e4) % 60, s = Math.floor(r / 1e3) % 60;
+      tekst.textContent = d > 0
+        ? `${odmiana(d, "dzień", "dni", "dni")} ${h} godz. ${m} min`
+        : `${h} godz. ${m} min ${s} s`;
+    };
+    tik();
+    setInterval(tik, 1000);
+    // Na stronie mapy pasek trafia do panelu, żeby nie zabierać miejsca mapie.
+    const miejsce = document.getElementById("odliczanie-mapa");
+    if (miejsce) { pasek.classList.add("odliczanie--panel"); miejsce.append(pasek); }
+    else naglowek.after(pasek);
+  }
+
   // --- Tryb offline / "Dodaj do ekranu głównego" ---
   if ("serviceWorker" in navigator && location.protocol === "https:") {
     window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
