@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <!-- Wersja z podpisami do poradnika. Generowana z mapa.svg i data/regiony.json.
+       Schemat Leonidy narysowany od zera dla ViceMap: ogólny kształt Florydy, na której wzorowana jest Leonida,
+       i przybliżone położenie sześciu oficjalnie nazwanych regionów. To NIE jest mapa z gry ani odrys przecieku.
+       Po premierze zastąp go własną mapą przerysowaną z gry (js/config.js). -->
+  <defs>
+    <radialGradient id="ocean" cx="62%" cy="55%" r="80%">
+      <stop offset="0" stop-color="#14344c"/>
+      <stop offset="1" stop-color="#0c1c2b"/>
+    </radialGradient>
+    <pattern id="siatka" width="100" height="100" patternUnits="userSpaceOnUse">
+      <path d="M100 0H0V100" fill="none" stroke="#ffffff" stroke-opacity=".04" stroke-width="2"/>
+    </pattern>
+    <pattern id="mokradla" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(28)">
+      <path d="M0 6h5" stroke="#3b7a6e" stroke-width="1.6" stroke-linecap="round"/>
+    </pattern>
+    <pattern id="las" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="4" cy="4" r="2.2" fill="#2f6650"/><circle cx="12" cy="12" r="2.2" fill="#2f6650"/>
+    </pattern>
+    <pattern id="kwartaly" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="5" height="5" fill="#ff7f98" fill-opacity=".55"/>
+    </pattern>
+    <clipPath id="lad"><path d="M170.0 150.0 C209.5 142.4 373.0 147.4 450.0 146.0 C527.0 144.6 681.6 139.2 720.0 140.0 C758.4 140.8 721.5 140.8 724.0 152.0 C726.5 163.2 733.7 199.3 738.0 220.0 C742.3 240.7 749.4 277.6 755.0 300.0 C760.6 322.4 771.7 362.5 778.0 380.0 C784.3 397.5 796.1 408.2 800.0 425.0 C803.9 441.8 802.9 477.6 806.0 500.0 C809.1 522.4 817.2 561.9 822.0 585.0 C826.8 608.1 836.1 644.0 840.0 665.0 C843.9 686.0 850.3 716.8 850.0 735.0 C849.7 753.2 844.2 781.4 838.0 795.0 C831.8 808.6 817.2 824.3 806.0 832.0 C794.8 839.7 772.3 847.2 758.0 850.0 C743.7 852.8 717.2 853.7 704.0 852.0 C690.8 850.3 673.0 845.3 664.0 838.0 C655.0 830.7 646.2 813.0 640.0 800.0 C633.8 787.0 625.6 760.7 620.0 745.0 C614.4 729.3 605.9 704.1 600.0 688.0 C594.1 671.9 584.2 644.4 578.0 630.0 C571.8 615.6 560.5 596.5 556.0 585.0 C551.5 573.5 546.6 556.8 546.0 548.0 C545.4 539.2 554.0 527.0 552.0 522.0 C550.0 517.0 535.6 517.0 532.0 512.0 C528.4 507.0 528.5 494.7 526.0 486.0 C523.5 477.3 517.6 460.6 514.0 450.0 C510.4 439.4 504.8 421.9 500.0 410.0 C495.2 398.1 486.7 376.9 480.0 365.0 C473.3 353.1 461.2 334.4 452.0 325.0 C442.8 315.6 426.0 302.6 414.0 298.0 C402.0 293.4 377.2 291.2 366.0 292.0 C354.8 292.8 342.1 303.4 334.0 304.0 C325.9 304.6 318.1 299.9 308.0 296.0 C297.9 292.1 275.2 280.5 262.0 276.0 C248.8 271.5 226.9 266.5 214.0 264.0 C201.1 261.5 176.4 267.0 170.0 258.0 C163.6 249.0 168.0 215.1 168.0 200.0 C168.0 184.9 130.5 157.6 170.0 150.0 Z"/></clipPath>
+  </defs>
+
+  <rect width="1000" height="1000" fill="url(#ocean)"/>
+  <path d="M127.1 104.5 C180.2 94.3 339.9 101.9 443.5 100.0 C547.1 98.1 697.0 92.1 748.6 93.2 C800.2 94.3 749.7 91.7 753.1 106.8 C756.5 121.8 763.1 155.7 768.9 183.6 C774.8 211.5 780.6 243.9 788.1 274.0 C795.7 304.1 805.7 340.9 814.1 364.4 C822.6 387.9 833.7 392.6 839.0 415.2 C844.3 437.9 841.6 469.9 845.8 500.0 C849.9 530.1 857.5 565.0 863.9 596.0 C870.3 627.1 878.9 658.2 884.2 686.5 C889.5 714.7 895.9 741.1 895.5 765.5 C895.1 790.0 890.2 815.1 881.9 833.3 C873.7 851.6 860.8 864.8 845.8 875.2 C830.7 885.5 810.8 891.7 791.5 895.5 C772.3 899.3 748.2 900.0 730.5 897.8 C712.8 895.5 697.4 891.7 685.3 881.9 C673.3 872.1 666.5 856.5 658.2 839.0 C649.9 821.5 643.1 797.9 635.6 776.8 C628.1 755.8 620.9 734.1 613.0 712.4 C605.1 690.8 596.4 666.3 588.1 646.9 C579.9 627.5 569.3 611.5 563.3 596.0 C557.3 580.6 552.7 566.1 552.0 554.2 C551.2 542.4 561.4 531.6 558.8 524.9 C556.1 518.1 541.1 520.3 536.2 513.6 C531.3 506.8 532.8 495.9 529.4 484.2 C526.0 472.5 520.7 457.8 515.8 443.5 C510.9 429.2 506.4 414.3 500.0 398.3 C493.6 382.3 486.4 363.5 477.4 347.5 C468.4 331.4 458.2 314.9 445.8 302.2 C433.3 289.6 419.0 278.0 402.8 271.7 C386.6 265.5 363.6 263.8 348.6 265.0 C333.5 266.1 323.3 277.8 312.4 278.5 C301.5 279.3 296.6 274.8 283.0 269.5 C269.5 264.2 248.8 252.9 231.1 246.9 C213.4 240.9 194.1 236.7 176.8 233.3 C159.5 229.9 135.8 238.6 127.1 226.5 C118.4 214.5 124.8 181.3 124.8 161.0 C124.8 140.7 74.0 114.7 127.1 104.5 Z" fill="none" stroke="#1d4560" stroke-width="2" opacity="0.45"/>
+  <path d="M150.2 129.0 C200.0 119.5 349.8 126.5 447.0 124.8 C544.2 123.0 684.8 117.3 733.2 118.4 C781.6 119.5 734.3 117.0 737.4 131.1 C740.6 145.3 746.8 177.1 752.3 203.2 C757.8 229.3 763.2 259.7 770.3 288.0 C777.4 316.3 786.7 350.7 794.7 372.8 C802.6 394.9 813.1 399.3 818.0 420.5 C822.9 441.7 820.5 471.7 824.4 500.0 C828.2 528.3 835.3 561.0 841.3 590.1 C847.3 619.2 855.5 648.4 860.4 674.9 C865.3 701.4 871.4 726.1 871.0 749.1 C870.6 772.1 866.1 795.6 858.3 812.7 C850.5 829.8 838.5 842.2 824.4 851.9 C810.2 861.6 791.5 867.5 773.5 871.0 C755.5 874.5 732.8 875.2 716.2 873.1 C699.6 871.0 685.1 867.5 673.8 858.3 C662.5 849.1 656.2 834.4 648.4 818.0 C640.6 801.6 634.3 779.5 627.2 759.7 C620.1 739.9 613.4 719.6 606.0 699.3 C598.6 679.0 590.5 656.0 582.7 637.8 C574.9 619.6 565.0 604.6 559.4 590.1 C553.7 575.6 549.5 562.0 548.8 550.9 C548.1 539.8 557.6 529.7 555.1 523.3 C552.6 517.0 538.5 519.1 533.9 512.7 C529.3 506.4 530.7 496.1 527.6 485.2 C524.4 474.2 519.4 460.4 514.8 447.0 C510.2 433.6 506.0 419.6 500.0 404.6 C494.0 389.6 487.3 371.9 478.8 356.9 C470.3 341.9 460.8 326.3 449.1 314.5 C437.5 302.7 424.0 291.7 408.8 285.9 C393.6 280.1 372.1 278.5 358.0 279.5 C343.8 280.6 334.3 291.5 324.0 292.2 C313.8 292.9 309.2 288.7 296.5 283.8 C283.8 278.8 264.3 268.2 247.7 262.6 C231.1 256.9 213.1 253.0 196.8 249.8 C180.6 246.7 158.3 254.8 150.2 243.5 C142.1 232.2 148.1 201.1 148.1 182.0 C148.1 162.9 100.4 138.5 150.2 129.0 Z" fill="none" stroke="#1d4560" stroke-width="2" opacity="0.7"/>
+
+  <!-- Sąsiednie stany (poza mapą gry) -->
+  <path d="M0 0 H738 L722 148 L450 145 L170 150 L168 258 C 120 262 60 270 0 278 Z" fill="#0f2434" stroke="#20405a" stroke-width="2"/>
+
+  <!-- Ląd Leonidy i granica stanu -->
+  <path d="M170.0 150.0 C209.5 142.4 373.0 147.4 450.0 146.0 C527.0 144.6 681.6 139.2 720.0 140.0 C758.4 140.8 721.5 140.8 724.0 152.0 C726.5 163.2 733.7 199.3 738.0 220.0 C742.3 240.7 749.4 277.6 755.0 300.0 C760.6 322.4 771.7 362.5 778.0 380.0 C784.3 397.5 796.1 408.2 800.0 425.0 C803.9 441.8 802.9 477.6 806.0 500.0 C809.1 522.4 817.2 561.9 822.0 585.0 C826.8 608.1 836.1 644.0 840.0 665.0 C843.9 686.0 850.3 716.8 850.0 735.0 C849.7 753.2 844.2 781.4 838.0 795.0 C831.8 808.6 817.2 824.3 806.0 832.0 C794.8 839.7 772.3 847.2 758.0 850.0 C743.7 852.8 717.2 853.7 704.0 852.0 C690.8 850.3 673.0 845.3 664.0 838.0 C655.0 830.7 646.2 813.0 640.0 800.0 C633.8 787.0 625.6 760.7 620.0 745.0 C614.4 729.3 605.9 704.1 600.0 688.0 C594.1 671.9 584.2 644.4 578.0 630.0 C571.8 615.6 560.5 596.5 556.0 585.0 C551.5 573.5 546.6 556.8 546.0 548.0 C545.4 539.2 554.0 527.0 552.0 522.0 C550.0 517.0 535.6 517.0 532.0 512.0 C528.4 507.0 528.5 494.7 526.0 486.0 C523.5 477.3 517.6 460.6 514.0 450.0 C510.4 439.4 504.8 421.9 500.0 410.0 C495.2 398.1 486.7 376.9 480.0 365.0 C473.3 353.1 461.2 334.4 452.0 325.0 C442.8 315.6 426.0 302.6 414.0 298.0 C402.0 293.4 377.2 291.2 366.0 292.0 C354.8 292.8 342.1 303.4 334.0 304.0 C325.9 304.6 318.1 299.9 308.0 296.0 C297.9 292.1 275.2 280.5 262.0 276.0 C248.8 271.5 226.9 266.5 214.0 264.0 C201.1 261.5 176.4 267.0 170.0 258.0 C163.6 249.0 168.0 215.1 168.0 200.0 C168.0 184.9 130.5 157.6 170.0 150.0 Z" fill="#163246" stroke="#2c5671" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M168 258 L170 150 L450 145 L720 140" stroke="#9db5c0" stroke-opacity=".5" stroke-width="2.5" stroke-dasharray="14 8" fill="none"/>
+
+  <g clip-path="url(#lad)">
+    <!-- Mount Kalaga: lasy na północy -->
+    <path d="M370.0 172.0 C385.0 162.3 421.7 165.0 450.0 164.0 C478.3 163.0 511.7 163.3 540.0 166.0 C568.3 168.7 601.7 170.7 620.0 180.0 C638.3 189.3 651.3 209.0 650.0 222.0 C648.7 235.0 632.0 249.7 612.0 258.0 C592.0 266.3 556.7 269.0 530.0 272.0 C503.3 275.0 475.0 277.7 452.0 276.0 C429.0 274.3 407.3 271.0 392.0 262.0 C376.7 253.0 363.7 237.0 360.0 222.0 C356.3 207.0 355.0 181.7 370.0 172.0 Z" fill="url(#las)" opacity=".9"/>
+    <!-- Grassrivers: mokradła na południowym zachodzie cypla -->
+    <path d="M640.0 684.0 C650.7 673.3 679.3 665.3 700.0 664.0 C720.7 662.7 746.3 667.3 764.0 676.0 C781.7 684.7 797.0 698.3 806.0 716.0 C815.0 733.7 821.0 763.7 818.0 782.0 C815.0 800.3 803.3 816.7 788.0 826.0 C772.7 835.3 745.3 839.3 726.0 838.0 C706.7 836.7 685.3 828.3 672.0 818.0 C658.7 807.7 652.0 791.0 646.0 776.0 C640.0 761.0 637.0 743.3 636.0 728.0 C635.0 712.7 629.3 694.7 640.0 684.0 Z" fill="url(#mokradla)"/>
+    <!-- Vice City i Port Gellhorn: zabudowa -->
+    <path d="M804.0 640.0 C810.0 632.7 826.3 644.3 834.0 656.0 C841.7 667.7 847.7 692.0 850.0 710.0 C852.3 728.0 852.7 752.7 848.0 764.0 C843.3 775.3 829.7 780.7 822.0 778.0 C814.3 775.3 806.0 761.0 802.0 748.0 C798.0 735.0 797.7 718.0 798.0 700.0 C798.3 682.0 798.0 647.3 804.0 640.0 Z" fill="url(#kwartaly)"/>
+    <path d="M282.0 268.0 C289.7 267.0 309.3 272.0 318.0 276.0 C326.7 280.0 334.3 287.3 334.0 292.0 C333.7 296.7 324.0 303.0 316.0 304.0 C308.0 305.0 293.3 301.7 286.0 298.0 C278.7 294.3 272.7 287.0 272.0 282.0 C271.3 277.0 274.3 269.0 282.0 268.0 Z" fill="url(#kwartaly)" opacity=".8"/>
+  </g>
+  <!-- Jezioro przy Ambrosii -->
+  <path d="M700.0 566.0 C707.7 563.0 721.7 557.7 730.0 560.0 C738.3 562.3 747.3 571.3 750.0 580.0 C752.7 588.7 750.7 603.7 746.0 612.0 C741.3 620.3 730.7 628.0 722.0 630.0 C713.3 632.0 701.0 629.0 694.0 624.0 C687.0 619.0 681.7 607.7 680.0 600.0 C678.3 592.3 680.7 583.7 684.0 578.0 C687.3 572.3 692.3 569.0 700.0 566.0 Z" fill="#14344c" stroke="#2c5671" stroke-width="2.5"/>
+  <!-- Szczyt w parku -->
+  <path d="M496 236 l20 -34 l20 34 z" fill="#9db5c0" fill-opacity=".55"/>
+
+  <!-- Wyspy -->
+  <g fill="#163246" stroke="#2c5671" stroke-width="2.5">
+    <ellipse cx="812" cy="846" rx="15" ry="6" transform="rotate(-28 812 846)"/>
+    <ellipse cx="784" cy="868" rx="17" ry="6" transform="rotate(-30 784 868)"/>
+    <ellipse cx="752" cy="888" rx="19" ry="7" transform="rotate(-26 752 888)"/>
+    <ellipse cx="716" cy="904" rx="21" ry="7" transform="rotate(-20 716 904)"/>
+    <ellipse cx="676" cy="916" rx="19" ry="7" transform="rotate(-13 676 916)"/>
+    <ellipse cx="636" cy="925" rx="17" ry="6" transform="rotate(-8 636 925)"/>
+    <ellipse cx="598" cy="931" rx="15" ry="6" transform="rotate(-4 598 931)"/>
+    <ellipse cx="562" cy="934" rx="13" ry="5" transform="rotate(0 562 934)"/>
+    <ellipse cx="530" cy="935" rx="10" ry="5" transform="rotate(2 530 935)"/>
+  </g>
+
+  <!-- Drogi -->
+  <g fill="none" stroke="#ffb648" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M716 165 C 734 250 760 360 788 440 C 802 520 814 600 830 680 C 836 720 836 745 834 768" stroke-opacity="0.55" stroke-width="4"/>
+    <path d="M180 200 C 300 206 400 212 480 214 C 580 214 660 196 716 170" stroke-opacity="0.5" stroke-width="4"/>
+    <path d="M480 216 C 520 300 548 380 560 450 C 572 530 600 610 640 668 C 690 720 760 735 830 738" stroke-opacity="0.45" stroke-width="3.5"/>
+    <path d="M560 452 C 640 470 720 470 790 450" stroke-opacity="0.35" stroke-width="2.5"/>
+    <path d="M812 806 C 796 842 770 868 730 894 C 670 916 600 930 530 934" stroke-opacity="0.45" stroke-width="3" stroke-dasharray="10 8"/>
+  </g>
+
+  <rect width="1000" height="1000" fill="url(#siatka)"/>
+
+  <!-- Róża wiatrów -->
+  <g transform="translate(915 95)" fill="#9db5c0" opacity=".8">
+    <circle r="34" fill="none" stroke="#9db5c0" stroke-opacity=".5" stroke-width="2"/>
+    <path d="M0 -46 L8 0 L0 46 L-8 0 Z" fill-opacity=".35"/>
+    <path d="M0 -46 L8 0 L-8 0 Z"/>
+    <text y="-52" text-anchor="middle" font-family="Overpass, system-ui, sans-serif" font-size="20" font-weight="700">N</text>
+  </g>
+
+  <!-- Tablica informacyjna w Zatoce -->
+  <g transform="translate(205 905)">
+    <rect x="-180" y="-60" width="360" height="120" rx="15" fill="#0a7a52"/>
+    <rect x="-171" y="-51" width="342" height="102" rx="10" fill="none" stroke="#f4f8f6" stroke-width="4"/>
+    <text y="-10" text-anchor="middle" font-family="Overpass, system-ui, sans-serif" font-size="28" font-weight="800" fill="#ffffff">Schemat Leonidy</text>
+    <text y="26" text-anchor="middle" font-family="Overpass, system-ui, sans-serif" font-size="22" font-weight="600" fill="#ffffff">mapa z gry od 19 listopada</text>
+  </g>
+
+  <!-- Podpisy regionów: położenie przybliżone -->
+  <g transform="translate(905 700)">
+    <rect x="-72" y="-17" width="143" height="34" rx="7" fill="#0c1c2b" fill-opacity=".8" stroke="#9db5c0" stroke-opacity=".4"/>
+    <text y="7" text-anchor="middle" font-family="Overpass, system-ui, sans-serif" font-size="21" font-weight="800" fill="#eef5f2">Vice City</text>
+  </g>
+  <g transform="translate(640 964)">
+    <rect x="-91" y="-17" width="182" height="34" rx="7" fill="#0c1c2b" fill-opacity=".8" stroke="#9db5c0" stroke-opacity=".4"/>
+    <text y="7" text-anchor="middle" font-family="Overpass, system-ui, sans-serif" font-size="21" font-weight="800" fill="#eef5f2">Leonida Keys</text>
+  </g>
+  <g transform="translate(705 762)">
+    <rect x="-84" y="-17" width="169" height="34" rx="7" fill="#0c1c2b" fill-opacity=".8" stroke="#9db5c0" stroke-opacity=".4"/>
+    <text y="7" text-anchor="middle" font-family="Overpass, system-ui, sans-serif" font-size="21" font-weight="800" fill="#eef5f2">Grassrivers</text>
+  </g>
+  <g transform="translate(615 595)">
+    <rect x="-65" y="-17" width="130" height="34" rx="7" fill="#0c1c2b" fill-opacity=".8" stroke="#9db5c0" stroke-opacity=".4"/>
+    <text y="7" text-anchor="middle" font-family="Overpass, system-ui, sans-serif" font-size="21" font-weight="800" fill="#eef5f2">Ambrosia</text>
+  </g>
+  <g transform="translate(250 332)">
+    <rect x="-98" y="-17" width="195" height="34" rx="7" fill="#0c1c2b" fill-opacity=".8" stroke="#9db5c0" stroke-opacity=".4"/>
+    <text y="7" text-anchor="middle" font-family="Overpass, system-ui, sans-serif" font-size="21" font-weight="800" fill="#eef5f2">Port Gellhorn</text>
+  </g>
+  <g transform="translate(520 178)">
+    <rect x="-91" y="-17" width="182" height="34" rx="7" fill="#0c1c2b" fill-opacity=".8" stroke="#9db5c0" stroke-opacity=".4"/>
+    <text y="7" text-anchor="middle" font-family="Overpass, system-ui, sans-serif" font-size="21" font-weight="800" fill="#eef5f2">Mount Kalaga</text>
+  </g>
+</svg>

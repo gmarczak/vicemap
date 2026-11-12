@@ -63,12 +63,19 @@ Znaczniki z kategorii ze spoilerami (misje) też nie dostają stron, żeby nie z
 
 Wszystko zapisuje się tylko w przeglądarce gracza – bez kont i bez wysyłania danych.
 
+## Schemat Leonidy (do premiery)
+
+`mapa.svg` to **własny schemat** narysowany od zera: ogólny kształt Florydy, na której wzorowana jest Leonida, i przybliżone położenie sześciu regionów nazwanych oficjalnie przez Rockstar (według ich florydzkich pierwowzorów). Świadomie **nie** jest to odrys mapy z przecieku ani fanowskiej rekonstrukcji – za mapę opartą na przecieku Take-Two usuwało już projekty fanów.
+
+Podpisy regionów na mapie pochodzą z `data/regiony.json` (nazwa, położenie, opis, pierwowzór). Ten sam plik waliduje pole `region` w znacznikach. Rysunek z podpisami do poradnika: `img/leonida-regiony.svg`.
+
 ## Podmiana mapy po premierze
 
 1. Przygotuj obraz mapy (najlepiej **własny, przerysowany** – nie zrzut z gry, patrz „Ryzyka” niżej).
 2. Wrzuć go np. jako `mapa.webp` i ustaw w `js/config.js`: `mapa: { obraz: "/mapa.webp", szerokosc: <px>, wysokosc: <px> }`.
 3. Przy zmianie wymiarów przelicz `x`/`y` istniejących znaczników.
-4. W `sw.js` dopisz nowy plik do listy `PODSTAWOWE` i podbij `WERSJA`.
+4. Przesuń podpisy regionów w `data/regiony.json` na prawdziwe miejsca.
+5. W `sw.js` dopisz nowy plik do listy `PODSTAWOWE` i podbij `WERSJA`.
 
 ## Zgłoszenia przez Supabase
 

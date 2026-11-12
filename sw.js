@@ -1,6 +1,6 @@
 // Tryb offline: strony i znaczniki najpierw z sieci (zawsze świeże), reszta z pamięci podręcznej.
 // Po zmianie listy plików poniżej podbij numer wersji.
-const WERSJA = "vicemap-v3";
+const WERSJA = "vicemap-v4";
 const PODSTAWOWE = [
   "/",
   "/style.css",
@@ -10,6 +10,7 @@ const PODSTAWOWE = [
   "/js/strona.js",
   "/data/kategorie.json",
   "/data/znaczniki.json",
+  "/data/regiony.json",
   "/mapa.svg",
   "/vendor/leaflet/leaflet.js",
   "/vendor/leaflet/leaflet.css",

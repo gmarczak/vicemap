@@ -1,0 +1,8 @@
+[
+  {"nazwa": "Vice City", "x": 905, "y": 300, "opis": "Największe miasto Leonidy, wzorowane na Miami: plaże, życie nocne i port.", "pierwowzor": "Miami"},
+  {"nazwa": "Leonida Keys", "x": 640, "y": 36, "opis": "Łańcuch tropikalnych wysp na południu stanu.", "pierwowzor": "Florida Keys"},
+  {"nazwa": "Grassrivers", "x": 705, "y": 238, "opis": "Rozległe mokradła z namorzynami i aligatorami.", "pierwowzor": "Everglades"},
+  {"nazwa": "Ambrosia", "x": 615, "y": 405, "opis": "Przemysłowe zaplecze stanu nad dużym jeziorem, z cukrownią.", "pierwowzor": "okolice jeziora Okeechobee"},
+  {"nazwa": "Port Gellhorn", "x": 250, "y": 668, "opis": "Podupadły kurort nad zatoką, nazywany zapomnianym wybrzeżem Leonidy.", "pierwowzor": "Forgotten Coast na zachodzie Florydy"},
+  {"nazwa": "Mount Kalaga", "x": 520, "y": 822, "opis": "Park narodowy na dzikiej północy: lasy, polowania i wędkowanie.", "pierwowzor": "lasy północnej Florydy"}
+]

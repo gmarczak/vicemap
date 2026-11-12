@@ -28,6 +28,7 @@
   let kategorie = [];
   let kategoriePoId = new Map();
   const warstwaMoich = L.layerGroup();
+  const warstwaRegionow = L.layerGroup();
   let trybDodawania = false;
 
   // --- Mapa ---
@@ -146,6 +147,47 @@
       if (widoczneKategorie.has(id)) warstwa.addTo(map); else map.removeLayer(warstwa);
     }
     if (widoczneKategorie.has(MOJE)) warstwaMoich.addTo(map); else map.removeLayer(warstwaMoich);
+  }
+
+  // --- Podpisy regionów (położenie przybliżone, ze schematu) ---
+  function dodajRegiony(regiony) {
+    for (const r of regiony) {
+      const etykieta = L.marker([r.y, r.x], {
+        icon: L.divIcon({ className: "", html: `<span class="region">${r.nazwa.replace(/[<&]/g, "")}</span>`, iconSize: null, iconAnchor: [0, 0] }),
+        zIndexOffset: -1000,
+        keyboard: true,
+        title: "Region: " + r.nazwa
+      });
+      etykieta.bindPopup(() => {
+        const ileMiejsc = [...znacznikiPoId.values()].filter((w) => w.dane.region === r.nazwa).length;
+        const tresc = el("div", { className: "popup" },
+          el("div", { className: "popup__kategoria", textContent: "Region" }),
+          el("strong", { className: "popup__nazwa", textContent: r.nazwa }),
+          el("p", { textContent: r.opis }),
+          el("p", { className: "popup__uwaga", textContent: `Pierwowzór: ${r.pierwowzor}. Położenie na schemacie jest przybliżone – dokładną mapę dodamy po premierze.` }));
+        if (ileMiejsc) {
+          const b = el("button", { type: "button", className: "przycisk przycisk--maly przycisk--glowny", textContent: `Pokaż tylko ten region (${ileMiejsc})` });
+          b.addEventListener("click", () => {
+            region = r.nazwa;
+            document.getElementById("region").value = r.nazwa;
+            etykieta.closePopup();
+            odswiezWidocznosc();
+          });
+          tresc.append(el("div", { className: "popup__akcje" }, b));
+        }
+        return tresc;
+      }, OPCJE_DYMKA());
+      warstwaRegionow.addLayer(etykieta);
+    }
+    const pole = document.getElementById("pokaz-regiony");
+    pole.checked = POSTEP.czytaj("regiony", true);
+    // Przy dużym przybliżeniu podpisy regionów tylko zasłaniają pinezki, więc wtedy znikają.
+    const ustaw = () => {
+      if (pole.checked && map.getZoom() < 1.5) warstwaRegionow.addTo(map); else map.removeLayer(warstwaRegionow);
+    };
+    pole.addEventListener("change", () => { POSTEP.zapisz("regiony", pole.checked); ustaw(); });
+    map.on("zoomend", ustaw);
+    ustaw();
   }
 
   // --- Własne pinezki ---
@@ -557,8 +599,8 @@
     return odp.json();
   }
 
-  Promise.all([wczytaj("/data/kategorie.json"), wczytaj("/data/znaczniki.json")])
-    .then(([kat, znaczniki]) => {
+  Promise.all([wczytaj("/data/kategorie.json"), wczytaj("/data/znaczniki.json"), wczytaj("/data/regiony.json").catch(() => [])])
+    .then(([kat, znaczniki, regiony]) => {
       kategorie = kat;
       kategoriePoId = new Map(kat.map((k) => [k.id, k]));
       const znane = new Set([...kategoriePoId.keys(), MOJE]);
@@ -584,6 +626,7 @@
         znacznikiPoId.set(z.id, { dane: z, marker });
       }
       for (const p of POSTEP.pinezki()) dodajMarkerWlasny(p);
+      dodajRegiony(regiony);
 
       zbudujFiltry();
       ustawPrzelaczniki();

@@ -12,6 +12,9 @@ const DZIS = new Date().toISOString().slice(0, 10);
 
 const kategorie = JSON.parse(await readFile(join(ROOT, "data/kategorie.json"), "utf8"));
 const znaczniki = JSON.parse(await readFile(join(ROOT, "data/znaczniki.json"), "utf8"));
+const regiony = existsSync(join(ROOT, "data/regiony.json"))
+  ? JSON.parse(await readFile(join(ROOT, "data/regiony.json"), "utf8")).map((r) => r.nazwa)
+  : [];
 
 // --- Walidacja danych: lepiej zatrzymać build niż wypuścić zepsutą mapę ---
 const bledy = [];
@@ -31,6 +34,7 @@ for (const z of znaczniki) {
   if (!katPoId.has(z.kategoria)) bledy.push(`${gdzie}: nieznana kategoria "${z.kategoria}"`);
   if (!z.nazwa) bledy.push(`${gdzie}: brak nazwy`);
   if (!Number.isFinite(z.x) || !Number.isFinite(z.y)) bledy.push(`${gdzie}: x i y muszą być liczbami`);
+  if (z.region && regiony.length && !regiony.includes(z.region)) bledy.push(`${gdzie}: nieznany region "${z.region}" – użyj nazwy z data/regiony.json (${regiony.join(", ")})`);
   if (z.status && !["potwierdzone", "spolecznosc"].includes(z.status)) bledy.push(`${gdzie}: status to "potwierdzone" albo "spolecznosc"`);
   if (z.dodano && !/^\d{4}-\d{2}-\d{2}$/.test(z.dodano)) bledy.push(`${gdzie}: dodano w formacie RRRR-MM-DD`);
   if (z.zrodlo && !/^https?:\/\//.test(z.zrodlo)) bledy.push(`${gdzie}: zrodlo musi być adresem http(s)`);

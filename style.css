@@ -173,6 +173,10 @@ tbody tr:hover td { background: rgba(24, 53, 75, .45); }
 .reklama { margin: 1.8em 0; min-height: 100px; text-align: center; }
 .dalej { margin-top: 2em; font-weight: 700; }
 
+.schemat { margin: 1.6em 0 2em; }
+.schemat img { display: block; width: 100%; border: 1px solid var(--linia); border-radius: var(--r-panel); }
+.schemat figcaption { margin-top: 10px; font-size: var(--t-mala); color: var(--mgla); }
+
 /* Spis poradników: rząd = tytuł i jedno zdanie, jak tablica kierunkowa */
 .spis { list-style: none; margin: 1em 0 0; padding: 0; border-top: 1px solid var(--linia); }
 .spis li { border-bottom: 1px solid var(--linia); }
@@ -327,6 +331,16 @@ input.szukaj {
 .pin--zaliczone { background: #5b6f7c; color: var(--piana); box-shadow: 0 0 0 2px #8ea3ae, 0 2px 5px rgba(0, 0, 0, .5); }
 .pin--moja { background: var(--piana); color: var(--zielen); box-shadow: 0 0 0 2px var(--zielen), 0 3px 8px rgba(0, 0, 0, .55); }
 
+/* Podpis regionu na mapie: jak napis na mapie samochodowej, nie jak przycisk */
+.region {
+  display: inline-block; transform: translate(-50%, -50%);
+  padding: 3px 9px 1px; white-space: nowrap;
+  font-size: .8125rem; font-weight: 800; letter-spacing: .02em; color: var(--piana);
+  background: rgba(12, 28, 43, .72); border: 1px solid rgba(157, 181, 192, .35); border-radius: 6px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .6); cursor: pointer;
+}
+.region:hover { border-color: var(--sod); }
+
 /* ---------- Leaflet w barwach strony ---------- */
 .leaflet-container { font: inherit; background: var(--ocean); }
 .leaflet-bar { border: 0 !important; box-shadow: var(--cien) !important; border-radius: var(--r-pole) !important; overflow: hidden; }
@@ -438,6 +452,7 @@ input.szukaj {
     box-shadow: 0 -12px 16px 4px var(--glebia);
   }
   .popup-otwarty .leaflet-control-zoom { display: none; }
+  .region { padding: 2px 6px 0; font-size: .6875rem; border-radius: 5px; }
   .odliczanie-mapa .odliczanie__data { display: none; }
   .odliczanie-mapa { top: 10px; right: 10px; }
   .komunikat-mapy { top: 54px; }
