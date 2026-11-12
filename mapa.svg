@@ -1,11 +1,71 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <!-- Mapa zastępcza do premiery. Wymyślone wybrzeże, nie rekonstrukcja mapy z gry. -->
   <defs>
+    <radialGradient id="ocean" cx="45%" cy="40%" r="75%">
+      <stop offset="0" stop-color="#14344c"/>
+      <stop offset="1" stop-color="#0c1c2b"/>
+    </radialGradient>
     <pattern id="siatka" width="100" height="100" patternUnits="userSpaceOnUse">
-      <path d="M100 0H0V100" fill="none" stroke="#3a3558" stroke-width="2"/>
+      <path d="M100 0H0V100" fill="none" stroke="#ffffff" stroke-opacity=".045" stroke-width="2"/>
+    </pattern>
+    <pattern id="mokradla" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+      <path d="M0 7h6" stroke="#2d5a66" stroke-width="1.6" stroke-linecap="round"/>
     </pattern>
   </defs>
-  <rect width="1000" height="1000" fill="#1b3a4b"/>
-  <path d="M250 150 Q500 80 720 200 Q850 400 760 650 Q650 880 420 850 Q200 780 180 500 Q170 280 250 150Z" fill="#2c2843"/>
+
+  <rect width="1000" height="1000" fill="url(#ocean)"/>
+
+  <!-- Izobaty -->
+  <g fill="none" stroke="#1d4560" stroke-width="2" opacity=".75">
+    <path d="M118 70 C 260 40 470 30 640 90 C 760 135 800 230 770 340 C 742 445 690 520 700 640 C 712 760 650 860 540 905 C 430 950 300 930 230 860 C 150 780 120 650 105 520 C 92 400 60 250 118 70 Z"/>
+    <path d="M60 30 C 250 -10 520 -15 700 55 C 850 115 880 250 845 370 C 815 470 760 550 775 660 C 790 790 720 910 580 960"/>
+  </g>
+  <g fill="none" stroke="#1d4560" stroke-width="2" stroke-dasharray="3 9" opacity=".6">
+    <path d="M760 690 C 820 760 880 800 960 820"/>
+  </g>
+
+  <!-- Ląd -->
+  <path fill="#163246" stroke="#2c5671" stroke-width="3" stroke-linejoin="round"
+    d="M150 105 C 280 80 450 72 600 120 C 700 152 730 235 708 320 C 690 392 640 452 640 540
+       C 640 610 668 650 662 720 C 655 800 596 858 520 872 C 452 884 398 850 372 800
+       C 352 760 318 742 280 728 C 214 702 176 640 160 560 C 146 488 150 430 136 360
+       C 124 300 100 240 112 180 C 118 145 128 115 150 105 Z"/>
+  <!-- Jezioro i mokradła -->
+  <path fill="#14344c" stroke="#2c5671" stroke-width="2" d="M380 300 C 420 280 478 290 492 330 C 506 372 470 404 426 402 C 380 400 350 372 352 340 C 354 318 364 306 380 300 Z"/>
+  <path fill="url(#mokradla)" d="M260 470 C 320 440 420 450 470 500 C 510 540 500 610 450 640 C 390 676 300 660 262 610 C 230 570 226 500 260 470 Z"/>
+
+  <!-- Wysepki -->
+  <g fill="#163246" stroke="#2c5671" stroke-width="2.5">
+    <ellipse cx="700" cy="905" rx="34" ry="13" transform="rotate(-18 700 905)"/>
+    <ellipse cx="770" cy="880" rx="26" ry="10" transform="rotate(-24 770 880)"/>
+    <ellipse cx="832" cy="850" rx="22" ry="9" transform="rotate(-28 832 850)"/>
+    <ellipse cx="888" cy="815" rx="18" ry="8" transform="rotate(-32 888 815)"/>
+    <ellipse cx="610" cy="905" rx="20" ry="9" transform="rotate(-10 610 905)"/>
+  </g>
+
+  <!-- Drogi -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M200 170 C 300 230 340 300 350 380 C 360 470 420 520 540 560 C 600 580 630 640 610 720 C 595 780 560 820 520 845" stroke="#ffb648" stroke-opacity=".55" stroke-width="4"/>
+    <path d="M520 845 C 580 870 640 890 700 905 L 770 880 L 832 850 L 888 815" stroke="#ffb648" stroke-opacity=".4" stroke-width="3" stroke-dasharray="10 8"/>
+    <path d="M160 360 C 260 350 330 340 352 345 M 492 330 C 560 330 640 300 690 290" stroke="#9db5c0" stroke-opacity=".35" stroke-width="2.5"/>
+    <path d="M300 160 C 320 250 300 320 260 400" stroke="#9db5c0" stroke-opacity=".3" stroke-width="2"/>
+  </g>
+
   <rect width="1000" height="1000" fill="url(#siatka)"/>
-  <text x="500" y="500" text-anchor="middle" fill="#8f89b3" font-family="sans-serif" font-size="36">Tu będzie mapa Leonidy</text>
+
+  <!-- Róża wiatrów -->
+  <g transform="translate(900 110)" fill="#9db5c0" opacity=".8">
+    <circle r="38" fill="none" stroke="#9db5c0" stroke-opacity=".5" stroke-width="2"/>
+    <path d="M0 -50 L9 0 L0 50 L-9 0 Z" fill="#9db5c0" fill-opacity=".35"/>
+    <path d="M0 -50 L9 0 L-9 0 Z"/>
+    <text y="-58" text-anchor="middle" font-family="Overpass, system-ui, sans-serif" font-size="22" font-weight="700">N</text>
+  </g>
+
+  <!-- Tablica informacyjna -->
+  <g transform="translate(205 925)">
+    <rect x="-180" y="-56" width="360" height="112" rx="15" fill="#0a7a52"/>
+    <rect x="-171" y="-47" width="342" height="94" rx="10" fill="none" stroke="#f4f8f6" stroke-width="4"/>
+    <text y="-6" text-anchor="middle" font-family="Overpass, system-ui, sans-serif" font-size="30" font-weight="800" fill="#ffffff">Mapa z gry</text>
+    <text y="30" text-anchor="middle" font-family="Overpass, system-ui, sans-serif" font-size="24" font-weight="600" fill="#ffffff">od 19 listopada</text>
+  </g>
 </svg>

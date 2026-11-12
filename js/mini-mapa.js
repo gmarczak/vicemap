@@ -15,5 +15,5 @@
   pin.style.setProperty("--kolor", kontener.dataset.kolor || "#ccc");
   pin.textContent = kontener.dataset.znak || "•";
   L.marker([y, x], { icon: L.divIcon({ className: "", html: pin.outerHTML, iconSize: [30, 30], iconAnchor: [15, 15] }) }).addTo(map);
-  map.setView([y, x], 1);
+  map.setView([y, x], 0);
 })();

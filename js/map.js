@@ -8,6 +8,8 @@
   const parametry = new URLSearchParams(location.search);
   const TRYB_EDYTORA = parametry.has("edytor");
   const MOJE = "moje"; // id warstwy własnych pinezek w filtrach
+  // Dymek mieści się na ekranie telefonu; dłuższa treść przewija się w środku.
+  const OPCJE_DYMKA = () => ({ maxWidth: 300, maxHeight: Math.round(window.innerHeight * 0.62), autoPanPaddingTopLeft: [16, 20], autoPanPaddingBottomRight: [16, 90] });
 
   const el = (tag, wlasciwosci, ...dzieci) => {
     const e = Object.assign(document.createElement(tag), wlasciwosci || {});
@@ -92,9 +94,9 @@
     const meta = el("div", { className: "popup__meta" }, etykietaStatusu(z));
     if (z.region) meta.append(el("span", { textContent: z.region }));
 
-    const stopka = [];
-    if (z.autor) stopka.push("Znalazł: " + z.autor);
-    if (z.dodano) stopka.push("Dodano: " + z.dodano);
+    const fakty = el("div", { className: "popup__fakty" });
+    if (z.autor) fakty.append(el("span", { textContent: "Znalazł: " + z.autor }));
+    if (z.dodano) fakty.append(el("span", { textContent: "Dodano " + z.dodano }));
 
     const linki = el("div", { className: "popup__akcje" }, przyciskKopiujLink("z=" + encodeURIComponent(z.id)),
       el("a", { className: "przycisk przycisk--maly", href: "/zglos.html?z=" + encodeURIComponent(z.id), textContent: "Zgłoś poprawkę" }));
@@ -110,7 +112,7 @@
       z.przyklad ? el("p", { className: "popup__uwaga", textContent: "Przykładowy znacznik – prawdziwe lokalizacje dodamy po premierze." }) : null,
       el("label", { className: "popup__zaliczone" }, pole, " Zaliczone"),
       poleNotatki(POSTEP.notatka(z.id), (t) => POSTEP.ustawNotatke(z.id, t)),
-      stopka.length ? el("p", { className: "popup__uwaga", textContent: stopka.join(" · ") }) : null,
+      fakty.childElementCount ? fakty : null,
       /^https?:\/\//.test(z.zrodlo || "") ? el("p", { className: "popup__uwaga" }, el("a", { href: z.zrodlo, rel: "nofollow noopener", target: "_blank", textContent: "Źródło" })) : null,
       linki
     );
@@ -148,7 +150,7 @@
 
   // --- Własne pinezki ---
   function dodajMarkerWlasny(p) {
-    const marker = L.marker([p.y, p.x], { icon: ikona("#ffffff", "★", false, "pin--moja"), title: p.nazwa, alt: p.nazwa });
+    const marker = L.marker([p.y, p.x], { icon: ikona("#eef5f2", "★", false, "pin--moja"), title: p.nazwa, alt: p.nazwa });
     marker.vicemapMoja = p.id;
     marker.bindPopup(() => {
       const aktualna = POSTEP.pinezki().find((q) => q.id === p.id) || p;
@@ -167,7 +169,7 @@
         poleNotatki(aktualna.opis, (t) => POSTEP.zmienPinezke(p.id, { opis: t })),
         el("p", { className: "popup__uwaga", textContent: "Widzisz ją tylko Ty, w tym profilu." }),
         el("div", { className: "popup__akcje" }, usun));
-    }, { maxWidth: 280 });
+    }, OPCJE_DYMKA());
     warstwaMoich.addLayer(marker);
     return marker;
   }
@@ -375,31 +377,40 @@
     const W = 1080, H = 1350;
     const c = el("canvas", { width: W, height: H });
     const g = c.getContext("2d");
-    const czcionka = (r, waga) => `${waga || 700} ${r}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
-    g.fillStyle = "#12101c"; g.fillRect(0, 0, W, H);
-    g.strokeStyle = "#1d1a2c"; g.lineWidth = 2;
-    for (let x = 0; x <= W; x += 60) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
-    for (let y = 0; y <= H; y += 60) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+    const czcionka = (r, waga) => `${waga || 700} ${r}px Overpass, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+    const zaokr = (x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); };
+    g.fillStyle = "#0c1c2b"; g.fillRect(0, 0, W, H);
+    g.strokeStyle = "#14283a"; g.lineWidth = 2;
+    for (let x = 0; x <= W; x += 90) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+    for (let y = 0; y <= H; y += 90) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+
+    // Logo jako zielona tablica drogowa
+    g.font = czcionka(60, 800);
+    const szer = g.measureText("ViceMap").width + 56;
+    g.fillStyle = "#0a7a52"; zaokr(72, 72, szer + 16, 112, 22); g.fill();
+    g.strokeStyle = "#f4f8f6"; g.lineWidth = 5; zaokr(80, 80, szer, 96, 15); g.stroke();
+    g.fillStyle = "#ffffff"; g.textBaseline = "middle"; g.fillText("ViceMap", 108, 132);
+    g.textBaseline = "alphabetic";
 
     const p = policzPostep();
-    g.font = czcionka(72); g.fillStyle = "#f1eef8"; g.fillText("Vice", 80, 150);
-    const w = g.measureText("Vice").width; g.fillStyle = "#ff5fa2"; g.fillText("Map", 80 + w, 150);
-    g.font = czcionka(36, 500); g.fillStyle = "#b9b3d1"; g.fillText("Mój postęp w GTA 6", 80, 210);
+    g.font = czcionka(38, 600); g.fillStyle = "#9db5c0"; g.fillText("Mój postęp w GTA 6", 80, 290);
+    g.font = czcionka(230, 800); g.fillStyle = "#eef5f2"; g.fillText(p.procent + "%", 66, 500);
+    g.font = czcionka(40, 400); g.fillStyle = "#9db5c0"; g.fillText(`${p.zrobione} z ${p.wszystkie} miejsc zaliczonych`, 82, 570);
+    g.fillStyle = "#18354b"; zaokr(80, 610, W - 160, 16, 8); g.fill();
+    if (p.procent) { g.fillStyle = "#ffb648"; zaokr(80, 610, (W - 160) * p.procent / 100, 16, 8); g.fill(); }
 
-    g.font = czcionka(220, 800); g.fillStyle = "#f1eef8"; g.fillText(p.procent + "%", 70, 460);
-    g.font = czcionka(40, 500); g.fillStyle = "#b9b3d1"; g.fillText(`${p.zrobione} z ${p.wszystkie} miejsc zaliczonych`, 84, 530);
-
-    let y = 640;
+    let y = 720;
     for (const kat of kategorie) {
       const s = p.naKategorie.get(kat.id);
-      if (kat.spoiler || !s.z || y > H - 170) continue;
-      g.font = czcionka(34, 600); g.fillStyle = "#f1eef8"; g.textAlign = "left"; g.fillText(kat.nazwa, 80, y);
-      g.textAlign = "right"; g.fillStyle = "#b9b3d1"; g.fillText(`${s.ile}/${s.z}`, W - 80, y); g.textAlign = "left";
-      g.fillStyle = "#262238"; g.fillRect(80, y + 18, W - 160, 18);
-      g.fillStyle = kat.kolor; g.fillRect(80, y + 18, (W - 160) * (s.ile / s.z), 18);
-      y += 92;
+      if (kat.spoiler || !s.z || y > H - 180) continue;
+      g.font = czcionka(34, 700); g.fillStyle = "#eef5f2"; g.textAlign = "left"; g.fillText(kat.nazwa, 80, y);
+      g.font = czcionka(34, 400); g.textAlign = "right"; g.fillStyle = "#9db5c0"; g.fillText(`${s.ile}/${s.z}`, W - 80, y); g.textAlign = "left";
+      g.fillStyle = "#18354b"; zaokr(80, y + 18, W - 160, 12, 6); g.fill();
+      if (s.ile) { g.fillStyle = kat.kolor; zaokr(80, y + 18, (W - 160) * (s.ile / s.z), 12, 6); g.fill(); }
+      y += 90;
     }
-    g.font = czcionka(36, 600); g.fillStyle = "#4fc3f7"; g.fillText("vicemap.pl – mapa GTA 6 po polsku", 80, H - 80);
+    g.font = czcionka(36, 700); g.fillStyle = "#ff7f98"; g.fillText("vicemap.pl", 80, H - 84);
+    g.font = czcionka(30, 400); g.fillStyle = "#9db5c0"; g.fillText("Interaktywna mapa GTA 6 po polsku", 80, H - 40);
     return c;
   }
 
@@ -441,7 +452,8 @@
       const warstwa = warstwy.get(kat.id);
       if (!warstwa.hasLayer(wpis.marker)) warstwa.addLayer(wpis.marker);
     }
-    map.setView(wpis.marker.getLatLng(), Math.max(map.getZoom(), 1));
+    // Bez animacji, żeby dymek po otwarciu mógł się dosunąć w całości na ekran.
+    map.setView(wpis.marker.getLatLng(), Math.max(map.getZoom(), 1), { animate: false });
     wpis.marker.openPopup();
     zamknijPanel();
     return true;
@@ -451,7 +463,7 @@
     const m = warstwaMoich.getLayers().find((x) => x.vicemapMoja === idPinezki);
     if (!m) return;
     if (!widoczneKategorie.has(MOJE)) { widoczneKategorie.add(MOJE); zapiszFiltry(); zbudujFiltry(); odswiezLiczniki(); odswiezWidocznosc(); }
-    map.setView(m.getLatLng(), Math.max(map.getZoom(), 1));
+    map.setView(m.getLatLng(), Math.max(map.getZoom(), 1), { animate: false });
     m.openPopup();
     zamknijPanel();
   }
@@ -567,7 +579,7 @@
         if (!k) { console.warn("Nieznana kategoria znacznika", z); continue; }
         const marker = L.marker([z.y, z.x], { icon: ikona(k.kolor, k.znak, POSTEP.czyZaliczone(z.id)), title: z.nazwa, alt: z.nazwa });
         marker.vicemapId = z.id;
-        marker.bindPopup(() => trescPopupu(z), { maxWidth: 280 });
+        marker.bindPopup(() => trescPopupu(z), OPCJE_DYMKA());
         warstwy.get(k.id).addLayer(marker);
         znacznikiPoId.set(z.id, { dane: z, marker });
       }

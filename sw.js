@@ -1,6 +1,6 @@
 // Tryb offline: strony i znaczniki najpierw z sieci (zawsze świeże), reszta z pamięci podręcznej.
 // Po zmianie listy plików poniżej podbij numer wersji.
-const WERSJA = "vicemap-v2";
+const WERSJA = "vicemap-v3";
 const PODSTAWOWE = [
   "/",
   "/style.css",
@@ -13,7 +13,9 @@ const PODSTAWOWE = [
   "/mapa.svg",
   "/vendor/leaflet/leaflet.js",
   "/vendor/leaflet/leaflet.css",
-  "/img/ikona.svg"
+  "/img/ikona.svg",
+  "/vendor/fonts/overpass-latin-wght-normal.woff2",
+  "/vendor/fonts/overpass-latin-ext-wght-normal.woff2"
 ];
 
 self.addEventListener("install", (e) => {

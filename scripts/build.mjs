@@ -60,7 +60,7 @@ function strona({ sciezka, tytul, opis, tresc, ld, glowa = "", skrypty = "", noi
   <meta property="og:description" content="${esc(opis)}">
   <meta property="og:url" content="${url}">
   <meta property="og:image" content="${DOMENA}/img/og.png">
-  <meta name="theme-color" content="#12101c">
+  <meta name="theme-color" content="#0c1c2b">
   <link rel="icon" href="/img/ikona.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/img/ikona-180.png">
   <link rel="manifest" href="/manifest.webmanifest">${glowa}
@@ -84,12 +84,14 @@ ${tresc}
 
   <footer class="stopka">
     <p>Nieoficjalna strona fanowska, niepowiązana z Rockstar Games ani Take-Two Interactive. Grand Theft Auto jest znakiem towarowym Take-Two Interactive.</p>
-    <p>
-      <a href="/polityka-prywatnosci.html">Polityka prywatności</a> ·
-      <a href="/zglos.html">Zgłoś znacznik</a> ·
+    <nav class="stopka__linki" aria-label="Stopka">
+      <a href="/poradniki/">Poradniki</a>
+      <a href="/lista-100.html">Lista 100%</a>
+      <a href="/zglos.html">Zgłoś znacznik</a>
+      <a href="/polityka-prywatnosci.html">Polityka prywatności</a>
       <a href="#" data-zmien-zgode>Ustawienia cookie</a>
-      <a href="#" data-wsparcie hidden> · Postaw kawę ☕</a>
-    </p>
+      <a href="#" data-wsparcie hidden>Postaw kawę</a>
+    </nav>
   </footer>
 
   <script src="/js/config.js"></script>${skrypty}
@@ -122,7 +124,10 @@ for (const z of publiczne) {
   const tresc = `${okruszki(...sciezkaOkr)}
     <article>
       <h1>GTA 6: ${esc(z.nazwa)} – gdzie jest</h1>
-      <p class="stan">${esc(kat.nazwa)}${z.region ? " · " + esc(z.region) : ""} · ${z.status === "potwierdzone" ? "potwierdzone" : "od społeczności"}${z.autor ? " · znalazł: " + esc(z.autor) : ""}${z.dodano ? " · dodano " + esc(z.dodano) : ""}</p>
+      <div class="meta">
+        <span class="etykieta${z.status === "potwierdzone" ? " etykieta--ok" : ""}">${z.status === "potwierdzone" ? "Potwierdzone" : "Od społeczności"}</span>
+        <span>${esc(kat.nazwa)}</span>${z.region ? `\n        <span>${esc(z.region)}</span>` : ""}${z.autor ? `\n        <span>Znalazł: ${esc(z.autor)}</span>` : ""}${z.dodano ? `\n        <span>Dodano ${esc(z.dodano)}</span>` : ""}
+      </div>
       ${z.opis ? `<p>${esc(z.opis)}</p>` : ""}
       <div id="mini-mapa" class="mini-mapa" data-x="${z.x}" data-y="${z.y}" data-kolor="${esc(kat.kolor)}" data-znak="${esc(kat.znak)}"></div>
 ${/^https?:\/\//.test(z.zrodlo || "") ? `      <p class="zrodla">Źródło: <a href="${esc(z.zrodlo)}" rel="nofollow noopener">${esc(new URL(z.zrodlo).hostname)}</a></p>\n` : ""}      <p><a class="przycisk przycisk--glowny" href="/#z=${encodeURIComponent(z.id)}">Pokaż na pełnej mapie</a>
@@ -196,7 +201,7 @@ ${lista.map((z) => `        <tr data-id="${esc(z.id)}" data-kategoria="${kat.id}
     tresc: `${okruszki(["/", "Mapa"], [null, "Lista 100%"])}
     <h1>GTA 6 – lista do 100%</h1>
     <p>Odhacz miejsca, które masz już zaliczone – lista korzysta z tego samego zapisu co <a href="/">mapa</a>, więc postęp widać w obu miejscach. Misje fabularne pominęliśmy, żeby nie zdradzać fabuły.</p>
-    <div class="ramka"><strong id="lista-postep">Zaliczone: 0 z 0</strong> <span class="stan" id="lista-profil"></span></div>
+    <div class="ramka"><strong id="lista-postep">Zaliczone: 0 z 0</strong><div class="stan" id="lista-profil"></div></div>
 ${sekcje || "    <p>Pierwsze miejsca dodamy w dniu premiery, 19 listopada 2026.</p>"}`,
     ld: { "@context": "https://schema.org", "@type": "CollectionPage", name: "GTA 6 – lista do 100%", inLanguage: "pl", url: DOMENA + "/lista-100.html" },
     skrypty: `\n  <script src="/js/postep.js"></script>\n  <script src="/js/lista.js"></script>`
@@ -231,13 +236,21 @@ ${wiersze.map(([kto, ile], i) => `        <tr><td>${i + 1}</td><td>${esc(kto)}</
   }
 }
 
+// Polska odmiana: 1 miejsce, 2–4 miejsca, 5+ miejsc (ale 12–14 miejsc).
+function odmienMiejsca(n) {
+  if (n === 1) return "jest 1 sprawdzone miejsce";
+  const d = n % 10, s = n % 100;
+  if (d >= 2 && d <= 4 && (s < 12 || s > 14)) return `są ${n} sprawdzone miejsca`;
+  return `jest ${n} sprawdzonych miejsc`;
+}
+
 // --- Nowe znaleziska na stronie głównej (statycznie, żeby widział je też Google) ---
 {
   const nowe = publiczne.filter((z) => z.dodano).sort((a, b) => b.dodano.localeCompare(a.dodano) || a.nazwa.localeCompare(b.nazwa, "pl")).slice(0, 10);
   const ostatnia = nowe.length ? nowe[0].dodano : null;
   const blok = nowe.length
     ? `    <h2>Nowe znaleziska</h2>
-    <p class="stan">Ostatnia aktualizacja mapy: ${ostatnia}. Wszystkich miejsc: ${publiczne.length}.${existsSync(join(ROOT, "odkrywcy.html")) ? ' <a href="/odkrywcy.html">Ranking odkrywców</a>' : ""}</p>
+    <p class="stan">Ostatnia aktualizacja mapy: ${ostatnia}. Na mapie ${odmienMiejsca(publiczne.length)}.${existsSync(join(ROOT, "odkrywcy.html")) ? ' Zobacz <a href="/odkrywcy.html">ranking odkrywców</a>.' : ""}</p>
     <ul class="nowosci">
 ${nowe.map((z) => { const k = katPoId.get(z.kategoria); return `      <li><span class="pin pin--maly" style="--kolor:${k.kolor}">${esc(k.znak)}</span><a href="/znaczniki/${z.id}.html">${esc(z.nazwa)}</a><time datetime="${z.dodano}">${z.dodano}</time></li>`; }).join("\n")}
     </ul>`

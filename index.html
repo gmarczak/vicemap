@@ -12,7 +12,7 @@
   <meta property="og:description" content="Kryjówki, sklepy, broń, znajdźki i tracker postępu do 100%. Po polsku, na telefon.">
   <meta property="og:url" content="https://vicemap.pl/">
   <meta property="og:image" content="https://vicemap.pl/img/og.png">
-  <meta name="theme-color" content="#12101c">
+  <meta name="theme-color" content="#0c1c2b">
   <link rel="icon" href="/img/ikona.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/img/ikona-180.png">
   <link rel="manifest" href="/manifest.webmanifest">
@@ -39,49 +39,58 @@
   </header>
 
   <div class="uklad-mapy">
-    <aside id="panel" class="panel" aria-label="Filtry i wyszukiwarka">
-      <label class="ukryta-etykieta" for="szukaj">Szukaj na mapie</label>
-      <input id="szukaj" class="szukaj" type="search" placeholder="Szukaj: kryjówka, sklep, broń…" autocomplete="off">
-      <ul id="wyniki" class="wyniki" aria-live="polite"></ul>
+    <aside id="panel" class="panel" aria-label="Filtry, wyszukiwarka i postęp">
+      <section class="panel__sekcja">
+        <label class="ukryta-etykieta" for="szukaj">Szukaj na mapie</label>
+        <input id="szukaj" class="szukaj" type="search" placeholder="Szukaj miejsca, np. kryjówka" autocomplete="off">
+        <ul id="wyniki" class="wyniki" aria-live="polite"></ul>
+        <div id="postep" class="postep">
+          <div class="postep__tekst">Zaliczone: 0 z 0 (0%)</div>
+          <div class="postep__pasek"><span></span></div>
+        </div>
+      </section>
 
-      <div id="postep" class="postep">
-        <div class="postep__tekst">Zaliczone: 0 z 0 (0%)</div>
-        <div class="postep__pasek"><span></span></div>
-      </div>
+      <section class="panel__sekcja">
+        <h2 class="panel__tytul">Co pokazać na mapie</h2>
+        <ul id="filtry" class="filtry"></ul>
+        <p class="panel__uwaga">Strzałka › przy kategorii prowadzi do najbliższego miejsca, którego jeszcze nie masz.</p>
+        <div class="panel__region" hidden>
+          <label for="region" class="panel__tytul--maly">Region</label>
+          <select id="region"><option value="">Cała Leonida</option></select>
+        </div>
+        <div class="panel__przyciski">
+          <button type="button" id="pokaz-wszystkie" class="przycisk przycisk--maly">Pokaż wszystkie</button>
+          <button type="button" id="ukryj-wszystkie" class="przycisk przycisk--maly">Ukryj wszystkie</button>
+        </div>
+        <label class="przelacznik"><input type="checkbox" id="ukryj-zaliczone"> Ukryj zaliczone</label>
+      </section>
 
-      <h2 class="panel__tytul">Kategorie</h2>
-      <p class="panel__uwaga">Strzałka › przy kategorii pokazuje najbliższe niezaliczone miejsce.</p>
-      <ul id="filtry" class="filtry"></ul>
-      <div class="panel__region" hidden>
-        <label for="region" class="panel__tytul panel__tytul--maly">Region</label>
-        <select id="region"><option value="">Cała Leonida</option></select>
-      </div>
-      <div class="panel__przyciski">
-        <button type="button" id="pokaz-wszystkie" class="przycisk przycisk--maly">Pokaż wszystkie</button>
-        <button type="button" id="ukryj-wszystkie" class="przycisk przycisk--maly">Ukryj wszystkie</button>
-      </div>
-      <label class="przelacznik"><input type="checkbox" id="ukryj-zaliczone"> Ukryj zaliczone</label>
-      <button type="button" id="dodaj-pinezke" class="przycisk przycisk--maly przycisk--pelny">+ Dodaj własną pinezkę</button>
+      <section class="panel__sekcja">
+        <button type="button" id="dodaj-pinezke" class="przycisk przycisk--maly przycisk--pelny">+ Dodaj własną pinezkę</button>
+        <p class="panel__uwaga">Zaznacz na mapie np. miejsce, w którym zostawiłeś auto. Widzisz ją tylko Ty.</p>
+      </section>
 
-      <h2 class="panel__tytul">Mój postęp</h2>
-      <label for="profil" class="ukryta-etykieta">Profil przejścia</label>
-      <select id="profil"></select>
-      <div class="panel__przyciski">
-        <button type="button" id="profil-nowy" class="przycisk przycisk--maly">Nowy profil</button>
-        <button type="button" id="profil-nazwa" class="przycisk przycisk--maly">Zmień nazwę</button>
-        <button type="button" id="profil-usun" class="przycisk przycisk--maly">Usuń</button>
-      </div>
-      <div class="panel__przyciski">
-        <button type="button" id="udostepnij" class="przycisk przycisk--maly przycisk--glowny">Udostępnij postęp</button>
-        <a class="przycisk przycisk--maly" href="/lista-100.html">Lista 100%</a>
-      </div>
-      <div class="panel__przyciski">
-        <button type="button" id="eksport" class="przycisk przycisk--maly">Zapisz kopię</button>
-        <button type="button" id="import" class="przycisk przycisk--maly">Wczytaj kopię</button>
-        <input type="file" id="import-plik" accept="application/json,.json" hidden>
-      </div>
-      <p class="panel__uwaga">Postęp, notatki i własne pinezki zapisują się tylko w tej przeglądarce. Zrób kopię, zanim wyczyścisz przeglądarkę albo zmienisz telefon. Kategoria „Misje fabularne” jest domyślnie ukryta, żeby nie zdradzać fabuły. Skrót: <kbd>/</kbd> – szukaj.</p>
-      <button type="button" id="resetuj-postep" class="link-przycisk">Wyczyść zaliczone w tym profilu</button>
+      <section class="panel__sekcja">
+        <h2 class="panel__tytul">Mój postęp</h2>
+        <label for="profil" class="ukryta-etykieta">Profil przejścia</label>
+        <select id="profil"></select>
+        <div class="panel__przyciski">
+          <button type="button" id="profil-nowy" class="przycisk przycisk--maly">Nowy profil</button>
+          <button type="button" id="profil-nazwa" class="przycisk przycisk--maly">Zmień nazwę</button>
+          <button type="button" id="profil-usun" class="przycisk przycisk--maly">Usuń profil</button>
+        </div>
+        <div class="panel__przyciski">
+          <button type="button" id="udostepnij" class="przycisk przycisk--maly przycisk--glowny">Udostępnij postęp</button>
+          <a class="przycisk przycisk--maly" href="/lista-100.html">Lista 100%</a>
+        </div>
+        <div class="panel__przyciski">
+          <button type="button" id="eksport" class="przycisk przycisk--maly">Zapisz kopię</button>
+          <button type="button" id="import" class="przycisk przycisk--maly">Wczytaj kopię</button>
+          <input type="file" id="import-plik" accept="application/json,.json" hidden>
+        </div>
+        <p class="panel__uwaga">Postęp, notatki i pinezki zapisują się tylko w tej przeglądarce. Zapisz kopię, zanim zmienisz telefon albo wyczyścisz dane przeglądarki. Misje fabularne są domyślnie ukryte, żeby nie zdradzać fabuły. Naciśnij <kbd>/</kbd>, żeby szukać.</p>
+        <button type="button" id="resetuj-postep" class="link-przycisk">Wyczyść zaliczone w tym profilu</button>
+      </section>
     </aside>
 
     <div class="mapa-kontener">
@@ -95,7 +104,7 @@
   <main class="tresc">
     <h1>Interaktywna mapa GTA 6 po polsku</h1>
     <p>ViceMap to nieoficjalna mapa stanu Leonida z GTA 6: kryjówki, sklepy, broń, pojazdy, znajdźki i aktywności poboczne. Zaznaczaj zaliczone miejsca, a licznik pokaże, ile brakuje do 100%. Mapa działa na telefonie, więc możesz ją mieć obok konsoli.</p>
-    <p><strong>Stan na 12 listopada 2026:</strong> GTA 6 wychodzi 19 listopada 2026. Znaczniki na mapie są przykładowe – prawdziwe lokalizacje dodajemy od dnia premiery. <a href="/zglos.html">Znalazłeś coś w grze? Zgłoś znacznik.</a></p>
+    <p class="stan">Stan na 12 listopada 2026. Gra wychodzi 19 listopada, a do tego czasu znaczniki na mapie są przykładowe. Prawdziwe miejsca dodajemy od dnia premiery. <a href="/zglos.html">Znalazłeś coś w grze? Zgłoś znacznik.</a></p>
 
     <!-- NOWOSCI:START -->
     <h2>Nowe znaleziska</h2>
@@ -103,25 +112,27 @@
     <!-- NOWOSCI:END -->
 
     <h2>Poradniki</h2>
-    <ul class="lista-poradnikow">
-      <li><a href="/poradniki/premiera.html">GTA 6 – data premiery, godzina i platformy</a></li>
-      <li><a href="/poradniki/preload-i-rozmiar.html">GTA 6 – preload i ile miejsca zajmuje gra</a></li>
-      <li><a href="/poradniki/ceny-i-edycje.html">GTA 6 – cena w Polsce i edycje</a></li>
-      <li><a href="/poradniki/tryb-online.html">GTA 6 Online – czy jest multiplayer na premierę</a></li>
-      <li><a href="/poradniki/regiony.html">GTA 6 mapa – regiony Leonidy</a></li>
-      <li><a href="/poradniki/kody.html">GTA 6 kody</a></li>
-      <li><a href="/lista-100.html">GTA 6 – lista do 100%</a></li>
+    <ul class="spis">
+      <li><a href="/poradniki/premiera.html"><span class="spis__tytul">GTA 6 – data premiery, godzina i platformy</span><span class="spis__opis">19 listopada 2026, o północy, na PS5 i Xbox Series X/S. Co wiadomo o wersji na PC.</span></a></li>
+      <li><a href="/poradniki/preload-i-rozmiar.html"><span class="spis__tytul">GTA 6 – preload i ile miejsca zajmuje gra</span><span class="spis__opis">Pobieranie od 10 listopada i do 212 GB na dysku konsoli.</span></a></li>
+      <li><a href="/poradniki/ceny-i-edycje.html"><span class="spis__tytul">GTA 6 – cena w Polsce i edycje</span><span class="spis__opis">349 zł za wersję Standard, 429 zł za Ultimate. Czym się różnią.</span></a></li>
+      <li><a href="/poradniki/tryb-online.html"><span class="spis__tytul">GTA 6 Online – czy jest multiplayer na premierę</span><span class="spis__opis">Na start tylko kampania. Co wiadomo o trybie sieciowym.</span></a></li>
+      <li><a href="/poradniki/regiony.html"><span class="spis__tytul">GTA 6 mapa – regiony Leonidy</span><span class="spis__opis">Sześć regionów stanu, od Vice City po Mount Kalaga.</span></a></li>
+      <li><a href="/poradniki/kody.html"><span class="spis__tytul">GTA 6 kody</span><span class="spis__opis">Co wiadomo przed premierą i jak działały kody w GTA V.</span></a></li>
+      <li><a href="/lista-100.html"><span class="spis__tytul">GTA 6 – lista do 100%</span><span class="spis__opis">Wszystkie miejsca do zaliczenia, odhaczane razem z mapą.</span></a></li>
     </ul>
   </main>
 
   <footer class="stopka">
     <p>Nieoficjalna strona fanowska, niepowiązana z Rockstar Games ani Take-Two Interactive. Grand Theft Auto jest znakiem towarowym Take-Two Interactive.</p>
-    <p>
-      <a href="/polityka-prywatnosci.html">Polityka prywatności</a> ·
-      <a href="/zglos.html">Zgłoś znacznik</a> ·
+    <nav class="stopka__linki" aria-label="Stopka">
+      <a href="/poradniki/">Poradniki</a>
+      <a href="/lista-100.html">Lista 100%</a>
+      <a href="/zglos.html">Zgłoś znacznik</a>
+      <a href="/polityka-prywatnosci.html">Polityka prywatności</a>
       <a href="#" data-zmien-zgode>Ustawienia cookie</a>
-      <a href="#" data-wsparcie hidden> · Postaw kawę ☕</a>
-    </p>
+      <a href="#" data-wsparcie hidden>Postaw kawę</a>
+    </nav>
   </footer>
 
   <script src="/js/config.js"></script>

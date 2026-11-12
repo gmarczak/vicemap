@@ -87,8 +87,10 @@
     const tekst = document.createElement("strong");
     const data = document.createElement("span");
     data.className = "odliczanie__data";
-    data.textContent = " · 19 listopada, 00:00";
-    pasek.append("Premiera GTA 6 za ", tekst, data);
+    data.textContent = "19 listopada, 00:00 czasu polskiego";
+    const opis = document.createElement("span");
+    opis.append("Premiera GTA 6 za ", tekst);
+    pasek.append(opis, data);
     const odmiana = (n, a, b, c) => n + " " + (n === 1 ? a : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? b : c);
     const tik = () => {
       const r = PREMIERA - Date.now();
