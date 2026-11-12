@@ -1,0 +1,10 @@
+{
+  "name": "vicemap",
+  "private": true,
+  "description": "ViceMap – interaktywna mapa GTA 6 po polsku (statyczna strona).",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "npx --yes serve -l 3000 ."
+  }
+}

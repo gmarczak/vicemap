@@ -1,0 +1,17 @@
+{
+  "name": "ViceMap – mapa GTA 6",
+  "short_name": "ViceMap",
+  "description": "Interaktywna mapa GTA 6 po polsku z trackerem postępu.",
+  "lang": "pl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#12101c",
+  "theme_color": "#12101c",
+  "icons": [
+    { "src": "/img/ikona-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/img/ikona-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/img/ikona-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/img/ikona.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
