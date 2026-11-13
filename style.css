@@ -3,6 +3,7 @@
   --panel: #1d1a2c;
   --panel-2: #262238;
   --linia: #3a3558;
+  --linia-ui: #857fa8; /* obramowania pól i przycisków: min. 3:1 (WCAG 1.4.11) */
   --tekst: #f1eef8;
   --tekst-2: #b9b3d1;
   --akcent: #ff5fa2;
@@ -77,7 +78,7 @@ th { color: var(--tekst-2); font-weight: 600; }
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   min-height: 40px; padding: 8px 14px;
   font: inherit; font-weight: 600; color: var(--tekst); text-decoration: none;
-  background: var(--panel-2); border: 1px solid var(--linia); border-radius: 999px; cursor: pointer;
+  background: var(--panel-2); border: 1px solid var(--linia-ui); border-radius: 999px; cursor: pointer;
 }
 .przycisk:hover { border-color: var(--akcent); color: var(--tekst); }
 .przycisk--glowny { background: var(--akcent); border-color: var(--akcent); color: #1a0b14; }
@@ -86,7 +87,7 @@ th { color: var(--tekst-2); font-weight: 600; }
 .link-przycisk { background: none; border: 0; padding: 0; font: inherit; font-size: .85rem; color: var(--tekst-2); text-decoration: underline; cursor: pointer; }
 input[type="text"], input[type="search"], input[type="email"], select, textarea {
   width: 100%; padding: 10px 12px; font: inherit; color: var(--tekst);
-  background: var(--tlo); border: 1px solid var(--linia); border-radius: var(--promien);
+  background: var(--tlo); border: 1px solid var(--linia-ui); border-radius: var(--promien);
 }
 textarea { min-height: 120px; resize: vertical; }
 .formularz label { display: block; margin: 14px 0 6px; font-weight: 600; }
@@ -337,3 +338,6 @@ nav a { display: inline-flex; align-items: center; min-height: 44px; }
 /* Mobile: nagłówek w dwóch wierszach; okruszki bez powiększonych celów */
 @media (max-width: 760px) { :root { --wys-naglowka: 94px; } }
 .okruszki a { display: inline; min-height: 0; }
+
+/* WCAG 2.5.8: linki na listach, w okruszkach i samotne linki w akapicie mają min. 24 px wysokości */
+.okruszki a, article li > a, main p > a:only-child, .lista-poradnikow a, .stopka a, .leaflet-control-attribution a { display: inline-block; min-height: 24px; line-height: 24px; }

@@ -162,6 +162,13 @@
   }
 
   // Prywatna notatka: zapis po 400 ms od ostatniego znaku i przy opuszczeniu pola.
+  // Zapis oczekujących notatek przy zamknięciu karty / ukryciu strony (debounce 400 ms mógłby je zgubić).
+  const oczekujaceNotatki = new Set();
+  const zapiszOczekujace = () => { for (const f of [...oczekujaceNotatki]) f(); };
+  const czyscZapisaneNotatki = () => oczekujaceNotatki.clear();
+  window.addEventListener("pagehide", zapiszOczekujace);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") zapiszOczekujace(); });
+
   function blokNotatki(z) {
     const pole = el("textarea", { className: "popup__notatka", maxLength: MAKS_NOTATKI, rows: 3, value: notatki[z.id] || "", placeholder: "Widoczna tylko w tej przeglądarce" });
     pole.setAttribute("aria-label", "Moja notatka do: " + z.nazwa);
@@ -171,13 +178,14 @@
     let czasZapisu = 0, czasKomunikatu = 0;
     const zapisz = () => {
       clearTimeout(czasZapisu);
+      oczekujaceNotatki.delete(zapisz);
       const ok = zapiszNotatke(z.id, pole.value);
       znak.hidden = !maNotatke(z.id);
       status.textContent = ok ? "Zapisano" : "Nie zapisano – pamięć przeglądarki jest wyłączona";
       clearTimeout(czasKomunikatu);
       czasKomunikatu = setTimeout(() => { status.textContent = ""; }, 2500);
     };
-    pole.addEventListener("input", () => { clearTimeout(czasZapisu); czasZapisu = setTimeout(zapisz, 400); });
+    pole.addEventListener("input", () => { clearTimeout(czasZapisu); oczekujaceNotatki.add(zapisz); czasZapisu = setTimeout(zapisz, 400); });
     pole.addEventListener("blur", () => { if (pole.value.trim() !== (notatki[z.id] || "")) zapisz(); });
     pole.addEventListener("keydown", (e) => e.stopPropagation()); // strzałki i +/- w polu nie mają ruszać mapą
     return el("details", { className: "popup__notatki" },
@@ -425,8 +433,18 @@
       zbudujFiltry(); odswiezLiczniki(); odswiezWidocznosc(); zapiszAdres();
     });
     document.getElementById("resetuj-postep").addEventListener("click", () => {
-      if (!confirm("Wyczyścić cały zapisany postęp na tym urządzeniu?")) return;
+      if (!confirm("Wyczyścić zaliczone znaczniki, ulubione i prywatne notatki zapisane na tym urządzeniu? Tej operacji nie można cofnąć (wcześniej możesz pobrać postęp do pliku).")) return;
+      czyscZapisaneNotatki();
+      const stare = [...ulubione, ...Object.keys(notatki)];
+      ulubione.clear();
+      for (const k of Object.keys(notatki)) delete notatki[k];
+      pamiec.zapisz("ulubione", []);
+      pamiec.zapisz("notatki", {});
       ustawZaliczone([...zaliczone], false);
+      for (const id of new Set(stare)) odswiezIkone(id);
+      for (const p of document.querySelectorAll(".popup__notatka")) p.value = "";
+      zbudujUlubione();
+      odswiezWidocznosc();
     });
     document.getElementById("kopiuj-widok").addEventListener("click", kopiujLinkWidoku);
     document.getElementById("pobierz-postep").addEventListener("click", pobierzPostep);
@@ -668,11 +686,26 @@
     const id = p.get("z");
     if (id) pokazZnacznik(id);
   }
+  // Klawiatura: dymek otwarty z fokusu na znaczniku przejmuje fokus (inaczej Tab omija go i idzie do kolejnych znaczników),
+  // a po zamknięciu (Esc, Zamknij) fokus wraca na znacznik.
+  let fokusZnacznika = null;
   map.on("popupopen", (e) => {
     otwartyId = (e.popup._source && e.popup._source.vicemapId) || null;
     zapiszAdres();
+    const ikona = e.popup._source && e.popup._source._icon, kontener = e.popup._container;
+    if (ikona && kontener && document.activeElement === ikona) {
+      fokusZnacznika = e.popup._source;
+      kontener.setAttribute("role", "dialog");
+      kontener.setAttribute("aria-label", (znacznikiPoId.get(otwartyId) || { dane: {} }).dane.nazwa || "Szczegóły znacznika");
+      kontener.tabIndex = -1;
+      kontener.focus({ preventScroll: true });
+    }
   });
   map.on("popupclose", (e) => {
+    const zrodlo = fokusZnacznika;
+    fokusZnacznika = null;
+    if (zrodlo && zrodlo === e.popup._source && zrodlo._icon && (document.activeElement === document.body || e.popup._container.contains(document.activeElement)))
+      zrodlo._icon.focus({ preventScroll: true });
     const id = e.popup._source && e.popup._source.vicemapId;
     if (id && id === wymuszony) wymuszony = null;
     if (id === otwartyId) otwartyId = null;
@@ -759,18 +792,30 @@
   }
 
   // --- Odliczanie do premiery: północ 19.11.2026 czasu lokalnego (godziny platform: poradniki/premiera.html) ---
+  // ODLICZANIE-START (testowane przez scripts/test-odliczanie.mjs – nie zmieniaj markerów)
+  // Czysta funkcja: (teraz w ms, cel w ms) -> { juz, dni, godzin }.
+  function stanOdliczania(teraz, cel) {
+    const ms = cel - teraz;
+    if (ms <= 0) return { juz: true, dni: 0, godzin: 0 };
+    const h = Math.floor(ms / 3600000);
+    return { juz: false, dni: Math.floor(h / 24), godzin: h % 24 };
+  }
+  // ODLICZANIE-END
   function ustawOdliczanie() {
     const e = document.getElementById("odliczanie");
     if (!e) return;
-    const cel = new Date(2026, 10, 19, 0, 0, 0).getTime();
+    const cel = new Date(2026, 10, 19, 0, 0, 0).getTime(); // lokalna północ użytkownika
+    let czas = 0;
     function odswiez() {
-      const ms = cel - Date.now();
-      if (ms <= 0) { e.textContent = "Gra jest już dostępna"; return; }
-      const godzin = Math.floor(ms / 3600000);
-      e.textContent = `Do premiery: ${Math.floor(godzin / 24)} dni ${godzin % 24} godz. (19.11.2026)`;
-      setTimeout(odswiez, 60000 - (Date.now() % 60000) + 50); // następna pełna minuta, bez interwału co sekundę
+      clearTimeout(czas);
+      const s = stanOdliczania(Date.now(), cel);
+      if (s.juz) { e.textContent = "Gra jest już dostępna"; return; }
+      e.textContent = `Do premiery: ${s.dni} dni ${s.godzin} godz. (19.11.2026)`;
+      czas = setTimeout(odswiez, 60000 - (Date.now() % 60000) + 50); // następna pełna minuta, bez interwału co sekundę
     }
     odswiez();
+    // Zakładka w tle ma wstrzymane timery: po powrocie przelicz od razu.
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) odswiez(); });
   }
   ustawOdliczanie();
 
