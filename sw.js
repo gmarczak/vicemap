@@ -1,6 +1,6 @@
 // Tryb offline: strony i znaczniki najpierw z sieci (zawsze świeże), reszta z pamięci podręcznej.
 // Po zmianie listy plików poniżej podbij numer wersji.
-const WERSJA = "vicemap-v2";
+const WERSJA = "vicemap-v3";
 const PODSTAWOWE = [
   "/",
   "/style.css",

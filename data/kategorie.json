@@ -1,11 +1,12 @@
 [
-  { "id": "kryjowki", "nazwa": "Kryjówki", "liczbaPojedyncza": "kryjówka", "kolor": "#ff5fa2", "znak": "K", "opis": "Kryjówki i mieszkania, w których zapiszesz grę i zmienisz ubranie." },
-  { "id": "sklepy", "nazwa": "Sklepy", "liczbaPojedyncza": "sklep", "kolor": "#4fc3f7", "znak": "S", "opis": "Sklepy spożywcze, odzieżowe, fryzjerzy i inne miejsca zakupów." },
-  { "id": "bron", "nazwa": "Broń", "liczbaPojedyncza": "sklep z bronią", "kolor": "#ff8a3d", "znak": "B", "opis": "Sklepy z bronią i miejsca, gdzie można ją zdobyć." },
-  { "id": "pojazdy", "nazwa": "Pojazdy", "liczbaPojedyncza": "pojazd", "kolor": "#ffd54f", "znak": "P", "opis": "Rzadkie samochody, łodzie i inne pojazdy warte zdobycia." },
-  { "id": "znajdzki", "nazwa": "Znajdźki", "liczbaPojedyncza": "znajdźka", "kolor": "#9ccc65", "znak": "Z", "opis": "Przedmioty do zebrania, potrzebne do ukończenia gry w 100%." },
-  { "id": "aktywnosci", "nazwa": "Aktywności", "liczbaPojedyncza": "aktywność", "kolor": "#b388ff", "znak": "A", "opis": "Aktywności poboczne: wyścigi, minigry, polowanie, wędkowanie." },
-  { "id": "pieniadze", "nazwa": "Pieniądze", "liczbaPojedyncza": "miejsce", "kolor": "#69f0ae", "znak": "$", "opis": "Miejsca i sposoby na szybkie pieniądze w trybie fabularnym." },
-  { "id": "sekrety", "nazwa": "Sekrety", "liczbaPojedyncza": "sekret", "kolor": "#e0e0e0", "znak": "?", "opis": "Easter eggi i ukryte miejsca." },
-  { "id": "misje", "nazwa": "Misje fabularne", "liczbaPojedyncza": "misja", "kolor": "#ef5350", "znak": "M", "opis": "Miejsca rozpoczęcia misji. Domyślnie ukryte, żeby nie zdradzać fabuły.", "spoiler": true }
+  {"id": "orientacyjne", "nazwa": "Punkty orientacyjne", "liczbaPojedyncza": "punkt orientacyjny", "kolor": "#26c6da", "znak": "O", "opis": "Znaki, budowle i rzeźby widoczne w trailerach, rozpoznane przez społeczność GTADB (dane na licencji CC BY 4.0). Niepotwierdzone przed premierą.", "bezStron": true},
+  {"id": "kryjowki", "nazwa": "Kryjówki", "liczbaPojedyncza": "kryjówka", "kolor": "#ff5fa2", "znak": "K", "opis": "Kryjówki i mieszkania, w których zapiszesz grę i zmienisz ubranie."},
+  {"id": "sklepy", "nazwa": "Sklepy", "liczbaPojedyncza": "sklep", "kolor": "#4fc3f7", "znak": "S", "opis": "Sklepy spożywcze, odzieżowe, fryzjerzy i inne miejsca zakupów."},
+  {"id": "bron", "nazwa": "Broń", "liczbaPojedyncza": "sklep z bronią", "kolor": "#ff8a3d", "znak": "B", "opis": "Sklepy z bronią i miejsca, gdzie można ją zdobyć."},
+  {"id": "pojazdy", "nazwa": "Pojazdy", "liczbaPojedyncza": "pojazd", "kolor": "#ffd54f", "znak": "P", "opis": "Rzadkie samochody, łodzie i inne pojazdy warte zdobycia."},
+  {"id": "znajdzki", "nazwa": "Znajdźki", "liczbaPojedyncza": "znajdźka", "kolor": "#9ccc65", "znak": "Z", "opis": "Przedmioty do zebrania, potrzebne do ukończenia gry w 100%."},
+  {"id": "aktywnosci", "nazwa": "Aktywności", "liczbaPojedyncza": "aktywność", "kolor": "#b388ff", "znak": "A", "opis": "Aktywności poboczne: wyścigi, minigry, polowanie, wędkowanie."},
+  {"id": "pieniadze", "nazwa": "Pieniądze", "liczbaPojedyncza": "miejsce", "kolor": "#69f0ae", "znak": "$", "opis": "Miejsca i sposoby na szybkie pieniądze w trybie fabularnym."},
+  {"id": "sekrety", "nazwa": "Sekrety", "liczbaPojedyncza": "sekret", "kolor": "#e0e0e0", "znak": "?", "opis": "Easter eggi i ukryte miejsca."},
+  {"id": "misje", "nazwa": "Misje fabularne", "liczbaPojedyncza": "misja", "kolor": "#ef5350", "znak": "M", "opis": "Miejsca rozpoczęcia misji. Domyślnie ukryte, żeby nie zdradzać fabuły.", "spoiler": true}
 ]

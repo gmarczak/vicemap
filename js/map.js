@@ -46,7 +46,7 @@
     attributionControl: true
   });
   map.attributionControl.setPrefix(false).addAttribution(
-    'Mapa bazowa: <a href="https://map.gtadb.org" target="_blank" rel="noopener">Yanis V17 / GTADB</a> (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, zmieniono: przycięcie i zmniejszenie)'
+    'Mapa i punkty: <a href="https://map.gtadb.org" target="_blank" rel="noopener">GTADB</a> / Yanis V17, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> (zmieniono)'
   );
   L.imageOverlay(MAPA.obraz, granice).addTo(map);
   map.fitBounds(granice);

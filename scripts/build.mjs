@@ -80,7 +80,7 @@ ${tresc}
 
   <footer class="stopka">
     <p>Nieoficjalna strona fanowska, niepowiązana z Rockstar Games ani Take-Two Interactive. Grand Theft Auto jest znakiem towarowym Take-Two Interactive.</p>
-    <p>Mapa bazowa: Yanis GTA VI Community Map V17 / <a href="https://map.gtadb.org" rel="noopener">GTADB</a>, licencja <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>; zmiany: przycięcie i zmniejszenie.</p>
+    <p class="atrybucja">Mapa i punkty orientacyjne: <a href="https://map.gtadb.org" rel="noopener">GTADB</a> / Yanis V17, <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a> (zmieniono: przycięcie i zmniejszenie).</p>
     <p>
       <a href="/polityka-prywatnosci.html">Polityka prywatności</a> ·
       <a href="/zglos.html">Zgłoś znacznik</a> ·
@@ -105,7 +105,7 @@ const breadcrumbLd = (elementy) => ({
 });
 
 // Strony powstają tylko dla prawdziwych danych: bez przykładów i bez kategorii ze spoilerami.
-const publiczne = znaczniki.filter((z) => !z.przyklad && !katPoId.get(z.kategoria).spoiler);
+const publiczne = znaczniki.filter((z) => !z.przyklad && !katPoId.get(z.kategoria).spoiler && !katPoId.get(z.kategoria).bezStron);
 const wygenerowane = [];
 
 // --- Strony znaczników ---
