@@ -19,8 +19,9 @@ const kat = JSON.parse(await readFile(join(ROOT, "data/kategorie.json"), "utf8")
 for (const k of kat) delete k.bezStron;
 const dlugi = "To jest bardzo długi, zmyślony opis testowy, który ma przekroczyć limit meta description i musi zostać ucięty na granicy słowa, a nie w środku wyrazu. Drugie zdanie dopełnia całość.";
 const z = (id, kategoria, nazwa, x, y, opis = "Zmyślony wpis testowy – kryjówka z widokiem na zatokę, tylko na potrzeby testu.", region = "Test County") => ({ id, kategoria, nazwa, opis, x, y, region });
+const prawdziwe = JSON.parse(await readFile(join(ROOT, "data/znaczniki.json"), "utf8"));
 const znaczniki = [
-  ...JSON.parse(await readFile(join(ROOT, "data/znaczniki.json"), "utf8")),
+  ...prawdziwe,
   z("test-kryjowka-1", "kryjowki", "Kryjówka testowa jeden", 1000, 1000),
   z("test-kryjowka-2", "kryjowki", "Kryjówka testowa dwa z bardzo długą nazwą, która nie mieści się w tytule", 1100, 1050, dlugi),
   z("test-kryjowka-3", "kryjowki", "Kryjówka testowa trzy", 1500, 1500),
@@ -29,10 +30,18 @@ const znaczniki = [
   z("test-bron-1", "bron", "Sklep z bronią testowy", 1200, 1200),
   z("test-bron-2", "bron", "Drugi sklep z bronią testowy", 2500, 2500),
   z("test-przyklad", "sklepy", "Przykład nie dostaje strony", 300, 300),
+  z("test-gtadb", "kryjowki", "Kryjówka z GTADB", 1300, 1300),
+  // Pary do ostrzeżeń o duplikatach (poza zasięgiem innych znaczników): różne nazwy = cisza, ta sama nazwa / te same x,y = ostrzeżenie.
+  z("test-pasaz-a", "sklepy", "Pasaż Kwiaty", 2900, 4300), z("test-pasaz-b", "sklepy", "Pasaż Buty", 2903, 4300),
+  z("test-dup-a", "sklepy", "Café Łódź (1)", 2950, 4300), z("test-dup-b", "sklepy", "Cafe lodz 2", 2954, 4300),
+  z("test-dup-c", "sklepy", "Zupełnie Inny", 3000, 4300), z("test-dup-d", "sklepy", "Zupełnie Inna Nazwa", 3000, 4300),
 ];
-znaczniki.at(-1).przyklad = true;
+znaczniki.find((m) => m.id === "test-przyklad").przyklad = true;
+Object.assign(znaczniki.find((m) => m.id === "test-gtadb"), { zrodlo: "gtadb", odpowiednik: 'Ocean <b>Drive</b> & "Co", Miami' });
+const regiony = [{ id: "test-region", nazwa: "Region testowy", x: 100, y: 100, zrodlo: "test" }];
 await writeFile(join(dane, "kategorie.json"), JSON.stringify(kat, null, 1));
 await writeFile(join(dane, "znaczniki.json"), JSON.stringify(znaczniki, null, 1));
+await writeFile(join(dane, "regiony.json"), JSON.stringify(regiony));
 
 const uruchom = () => spawnSync(process.execPath, [BUILD], { encoding: "utf8", env: { ...process.env, VICEMAP_DANE: dane, VICEMAP_WYJSCIE: wyj } });
 let porazki = 0;
@@ -40,9 +49,13 @@ const ok = (warunek, opis) => { if (!warunek) { porazki++; console.error("BŁĄD
 
 const r = uruchom();
 ok(r.status === 0, "build na poprawnych danych: " + r.stderr);
+if (r.status !== 0) { console.error(r.stderr); process.exit(1); }
 const pZn = await readdir(join(wyj, "znaczniki")), pKat = await readdir(join(wyj, "kategorie"));
 const pliki = [...pZn.map((p) => "znaczniki/" + p), ...pKat.map((p) => "kategorie/" + p)];
-ok(pZn.length === 7 + 25 && pKat.length === 4 && !pZn.includes("test-przyklad.html"), `liczba stron (${pZn.length} znaczników, ${pKat.length} kategorii) lub strona przykładu`);
+const spoilery = new Set(kat.filter((k) => k.spoiler).map((k) => k.id));
+const publ = znaczniki.filter((m) => !m.przyklad && !spoilery.has(m.kategoria));
+const oczekKat = new Set(publ.map((m) => m.kategoria)).size;
+ok(pZn.length === publ.length && pKat.length === oczekKat && !pZn.includes("test-przyklad.html"), `liczba stron (${pZn.length} znaczników, oczekiwano ${publ.length}; ${pKat.length} kategorii, oczekiwano ${oczekKat}) lub strona przykładu`);
 
 const sprawdz = async (rel) => {
   const html = await readFile(join(wyj, rel), "utf8");
@@ -76,6 +89,19 @@ const kk = await readFile(join(wyj, "kategorie/kryjowki.html"), "utf8");
 ok(kk.includes("<table>") && kk.includes('href="/znaczniki/test-kryjowka-3.html"'), "lista na stronie kategorii");
 ok(existsSync(join(wyj, "kategorie/orientacyjne.html")), "kategoria orientacyjne (bez bezStron) ma stronę");
 
+// (d) Pewność i odpowiednik na stronie znacznika (escapowane); zwykły znacznik bez tych linii
+const sg = await readFile(join(wyj, "znaczniki/test-gtadb.html"), "utf8");
+ok(sg.includes("Pewność: zidentyfikowane przez społeczność GTADB, niepotwierdzone przed premierą"), "strona gtadb: brak linii Pewność");
+ok(sg.includes("Prawdziwy odpowiednik: Ocean &lt;b&gt;Drive&lt;/b&gt; &amp; &quot;Co&quot;, Miami") && !sg.includes("<b>Drive"), "strona gtadb: odpowiednik niezescapowany");
+ok(!s2.includes("Pewność:") && !s2.includes("Prawdziwy odpowiednik"), "zwykły znacznik nie powinien mieć linii Pewność/odpowiednik");
+
+// (a) ostrzeżenia o duplikatach: tylko ta sama (prawie) nazwa albo identyczne x,y
+const ostrz = r.stderr;
+ok(!ostrz.includes("test-pasaz-a") && !ostrz.includes("test-pasaz-b"), "różne lokale w pasażu nie powinny dawać ostrzeżenia");
+ok(/"test-dup-a".*"test-dup-b".*tę samą nazwę/.test(ostrz), "brak ostrzeżenia dla tej samej nazwy (bez wielkości liter, ogonków, nawiasów i cyfr na końcu)");
+ok(/"test-dup-c".*"test-dup-d".*identyczne współrzędne/.test(ostrz), "brak ostrzeżenia dla identycznych x,y");
+ok(/przykładowy/.test(ostrz), "brak ostrzeżenia o znaczniku przykładowym");
+
 // Walidacja: wszystkie błędy naraz, kod != 0
 const zle = [
   z("Zły ID", "kryjowki", "", 1, 1, "krótki"), z("test-kryjowka-1", "nie-ma", "Nazwa", 99999, -5),
@@ -85,6 +111,35 @@ await writeFile(join(dane, "znaczniki.json"), JSON.stringify(zle));
 const rz = uruchom();
 ok(rz.status !== 0, "walidacja powinna zwrócić kod != 0");
 for (const fragment of ["niepoprawne id", "brak nazwy", "zbyt krótki", "nieznana kategoria", "poza mapą", "id powtórzone", "muszą być liczbami"]) ok(rz.stderr.includes(fragment), `walidacja: brak komunikatu "${fragment}"`);
+
+// (b) opcjonalne pola znacznika
+const dobry = z("test-ok", "kryjowki", "Dobry", 10, 10);
+const zleOpt = [
+  { ...dobry, id: "o-1", odpowiednik: "" }, { ...dobry, id: "o-2", odpowiednik: "x".repeat(151) }, { ...dobry, id: "o-3", odpowiednik: 5 },
+  { ...dobry, id: "o-4", zrodlo: "wikipedia" }, { ...dobry, id: "o-5", region: 7 },
+  { ...dobry, id: "o-ok", odpowiednik: "Miami", zrodlo: "gtadb" },
+];
+await writeFile(join(dane, "znaczniki.json"), JSON.stringify(zleOpt));
+const rb = uruchom();
+ok(rb.status !== 0, "złe pola odpowiednik/zrodlo/region powinny zatrzymać build");
+ok((rb.stderr.match(/"odpowiednik" musi być/g) || []).length === 3, "odpowiednik: oczekiwano 3 błędów (pusty, za długi, nie tekst)");
+ok(rb.stderr.includes('nieznane "zrodlo"') && rb.stderr.includes('"region" musi być tekstem') && !rb.stderr.includes(`pozycja 6 ("o-ok")`), "zrodlo/region: komunikaty lub fałszywy błąd dla poprawnego wpisu");
+
+// (c) regiony.json
+await writeFile(join(dane, "znaczniki.json"), JSON.stringify([dobry]));
+const zleReg = [
+  { id: "Zły Id", nazwa: "A", x: 1, y: 1 }, { id: "r-1", nazwa: "", x: 1, y: 1 }, { id: "r-2", nazwa: "B", x: "1", y: 1 },
+  { id: "r-3", nazwa: "C", x: 99999, y: 1 }, { id: "r-3", nazwa: "D", x: 1, y: 1 }, { id: "r-ok", nazwa: "E", x: 1, y: 1 },
+];
+await writeFile(join(dane, "regiony.json"), JSON.stringify(zleReg));
+const rr = uruchom();
+ok(rr.status !== 0, "złe regiony powinny zatrzymać build");
+for (const fragment of ["regiony.json, pozycja 1", "niepoprawne id", "brak nazwy", "muszą być liczbami", "poza mapą", "id powtórzone"]) ok(rr.stderr.includes(fragment), `regiony: brak komunikatu "${fragment}"`);
+ok(!rr.stderr.includes(`pozycja 6 ("r-ok")`), "regiony: fałszywy błąd dla poprawnego wpisu");
+await writeFile(join(dane, "regiony.json"), JSON.stringify({ id: "a" }));
+ok(uruchom().stderr.includes("oczekiwana tablica"), "regiony: obiekt zamiast tablicy");
+await writeFile(join(dane, "regiony.json"), JSON.stringify(regiony));
+ok(uruchom().status === 0, "poprawny regiony.json nie powinien blokować builda");
 
 console.log(porazki ? `\nNie przeszło: ${porazki} problemów. Pliki testowe: ${tmp}` : `Test szablonu i walidacji: OK (${pliki.length} stron, katalog tymczasowy ${tmp})`);
 process.exit(porazki ? 1 : 0);

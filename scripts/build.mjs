@@ -23,6 +23,7 @@ async function wczytaj(nazwa) {
 }
 const kategorie = await wczytaj("kategorie.json");
 const znaczniki = await wczytaj("znaczniki.json");
+const regiony = existsSync(join(DANE, "regiony.json")) ? await wczytaj("regiony.json") : null;
 
 // Wymiary mapy z js/config.js (znaczniki muszą mieścić się w obrazie).
 const cfg = await readFile(join(ROOT, "js/config.js"), "utf8");
@@ -33,7 +34,8 @@ const WYS = Number(/wysokosc:\s*(\d+)/.exec(cfg)?.[1]);
 const bledy = [];
 const ostrzezenia = [];
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const OPIS_MIN = 30, OPIS_MAX = 400, BLISKO_PX = 8;
+const OPIS_MIN = 30, OPIS_MAX = 400, ODP_MAX = 150, BLISKO_PX = 8;
+const ZRODLA = ["gtadb", "zgloszenie", "gra"];
 const katPoId = new Map();
 kategorie.forEach((k, i) => {
   const gdzie = `kategorie.json, pozycja ${i + 1} ("${k.id ?? "?"}")`;
@@ -59,14 +61,40 @@ znaczniki.forEach((z, i) => {
   } else if (SZER && WYS && (z.x < 0 || z.x > SZER || z.y < 0 || z.y > WYS)) {
     bledy.push(`${gdzie}: x=${z.x}, y=${z.y} poza mapą (x: 0-${SZER}, y: 0-${WYS}). Przelicz współrzędne albo skopiuj je ponownie z ?edytor.`);
   }
+  if (z.odpowiednik !== undefined && (typeof z.odpowiednik !== "string" || !z.odpowiednik.trim() || z.odpowiednik.length > ODP_MAX)) {
+    bledy.push(`${gdzie}: "odpowiednik" musi być niepustym tekstem do ${ODP_MAX} znaków (prawdziwe miejsce, np. "Ocean Drive, Miami"). Usuń pole, jeśli nie znasz odpowiednika.`);
+  }
+  if (z.zrodlo !== undefined && !ZRODLA.includes(z.zrodlo)) bledy.push(`${gdzie}: nieznane "zrodlo" (${JSON.stringify(z.zrodlo)}). Dozwolone: ${ZRODLA.join(", ")}.`);
+  if (z.region !== undefined && typeof z.region !== "string") bledy.push(`${gdzie}: "region" musi być tekstem, np. "Vice City".`);
   if (z.przyklad) ostrzezenia.push(`${gdzie}: znacznik przykładowy ("przyklad": true) – nie dostanie strony ani wpisu w sitemap. Po premierze usuń go albo zamień na prawdziwy.`);
 });
+// Duplikaty: bliskie znaczniki (<8 px) ostrzegają tylko przy tej samej (prawie) nazwie albo identycznych x,y.
+// Różne lokale w jednym pasażu leżą blisko siebie zupełnie zgodnie z prawdą, więc nie są alarmem.
+const normNazwa = (n) => String(n ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l")
+  .replace(/\([^)]*\)/g, "").replace(/[()]/g, "").replace(/[\s\d]+$/, "").replace(/\s+/g, " ").trim();
 for (let i = 0; i < znaczniki.length; i++) {
   for (let j = i + 1; j < znaczniki.length; j++) {
     const a = znaczniki[i], b = znaczniki[j];
-    if (Number.isFinite(a.x + a.y + b.x + b.y) && Math.hypot(a.x - b.x, a.y - b.y) < BLISKO_PX) {
-      ostrzezenia.push(`znaczniki.json: "${a.id}" (pozycja ${i + 1}) i "${b.id}" (pozycja ${j + 1}) leżą w odległości mniejszej niż ${BLISKO_PX} px – to może być duplikat.`);
-    }
+    if (!Number.isFinite(a.x + a.y + b.x + b.y) || Math.hypot(a.x - b.x, a.y - b.y) >= BLISKO_PX) continue;
+    const to = a.x === b.x && a.y === b.y ? "mają identyczne współrzędne" : normNazwa(a.nazwa) && normNazwa(a.nazwa) === normNazwa(b.nazwa) ? `leżą w odległości mniejszej niż ${BLISKO_PX} px i mają tę samą nazwę ("${a.nazwa}" / "${b.nazwa}")` : "";
+    if (to) ostrzezenia.push(`znaczniki.json: "${a.id}" (pozycja ${i + 1}) i "${b.id}" (pozycja ${j + 1}) ${to} – to może być duplikat.`);
+  }
+}
+// regiony.json (opcjonalny): [{id, nazwa, x, y, zrodlo}]
+if (regiony !== null) {
+  if (!Array.isArray(regiony)) bledy.push(`regiony.json: oczekiwana tablica [{id, nazwa, x, y}], jest ${typeof regiony}.`);
+  else {
+    const rid = new Set();
+    regiony.forEach((r, i) => {
+      const gdzie = `regiony.json, pozycja ${i + 1} ("${r?.id ?? r?.nazwa ?? "?"}")`;
+      if (!r || typeof r !== "object") return bledy.push(`${gdzie}: wpis musi być obiektem {id, nazwa, x, y}.`);
+      if (!r.id || !ID.test(r.id)) bledy.push(`${gdzie}: niepoprawne id. Użyj małych liter, cyfr i myślników, np. "vice-city".`);
+      else if (rid.has(r.id)) bledy.push(`${gdzie}: id powtórzone. Id regionu musi być unikalne.`);
+      else rid.add(r.id);
+      if (!r.nazwa || !String(r.nazwa).trim()) bledy.push(`${gdzie}: brak nazwy. Dodaj pole "nazwa".`);
+      if (typeof r.x !== "number" || typeof r.y !== "number" || !Number.isFinite(r.x) || !Number.isFinite(r.y)) bledy.push(`${gdzie}: x i y muszą być liczbami (bez cudzysłowów).`);
+      else if (SZER && WYS && (r.x < 0 || r.x > SZER || r.y < 0 || r.y > WYS)) bledy.push(`${gdzie}: x=${r.x}, y=${r.y} poza mapą (x: 0-${SZER}, y: 0-${WYS}).`);
+    });
   }
 }
 if (ostrzezenia.length) console.warn(`Ostrzeżenia (${ostrzezenia.length}):\n- ${ostrzezenia.join("\n- ")}\n`);
@@ -186,6 +214,10 @@ for (const z of publiczne) {
       <h1>GTA 6: ${esc(z.nazwa)} – gdzie jest</h1>
       <p class="stan">${esc(kat.nazwa)}${z.region ? " · " + esc(z.region) : ""}</p>
       ${z.opis ? `<p>${esc(z.opis)}</p>` : ""}
+${z.zrodlo === "gtadb" || z.odpowiednik ? `      <ul class="fakty">
+${z.zrodlo === "gtadb" ? `        <li>Pewność: zidentyfikowane przez społeczność GTADB, niepotwierdzone przed premierą.</li>
+` : ""}${z.odpowiednik ? `        <li>Prawdziwy odpowiednik: ${esc(z.odpowiednik)}</li>
+` : ""}      </ul>` : ""}
       <div id="mini-mapa" class="mini-mapa" role="img" aria-label="Mini mapa: ${esc(z.nazwa)}" data-x="${z.x}" data-y="${z.y}" data-kolor="${esc(kat.kolor)}" data-znak="${esc(kat.znak)}"></div>
       <p><a class="przycisk przycisk--glowny" href="/#z=${encodeURIComponent(z.id)}">Pokaż na pełnej mapie</a>
          <a class="przycisk" href="/zglos.html?z=${encodeURIComponent(z.id)}">Zgłoś poprawkę</a></p>

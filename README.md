@@ -1,6 +1,6 @@
 # ViceMap – interaktywna mapa GTA 6 po polsku
 
-Statyczna strona (HTML + JavaScript, bez frameworka). Mapa działa na [Leaflet](https://leafletjs.com/) dołączonym lokalnie w `vendor/leaflet`.
+Statyczna strona (HTML + JavaScript, bez frameworka). Mapa działa na [Leaflet](https://leafletjs.com/) dołączonym lokalnie w `vendor/leaflet`, a grupowanie znaczników na [Leaflet.markercluster](https://github.com/Leaflet/Leaflet.markercluster) 1.5.3 (licencja MIT) w `vendor/leaflet.markercluster-1.5.3`.
 
 ## Podgląd na własnym komputerze
 
@@ -17,10 +17,11 @@ i otwórz http://localhost:3000.
 | Ścieżka | Co to jest |
 | --- | --- |
 | `index.html` | Strona z mapą |
-| `data/kategorie.json` | Kategorie: nazwa, kolor, litera na pinezce, `spoiler: true` = domyślnie ukryta |
+| `data/kategorie.json` | Kategorie: nazwa, kolor, litera na pinezce, `spoiler: true` = domyślnie ukryta, `bezStron: true` = bez własnych stron w Google |
 | `data/znaczniki.json` | Wszystkie znaczniki na mapie |
+| `data/regiony.json` | Sześć regionów Leonidy: `id`, `nazwa`, `x`, `y`, `zrodlo` (skąd wzięto środek). Podstawa linków `#v=x,y,zoom` w poradniku o regionach |
 | `js/config.js` | Ustawienia: obraz mapy, Supabase, AdSense, wsparcie, linki partnerskie |
-| `js/map.js` | Mapa: filtry, wyszukiwarka, tracker postępu, linki `#z=id`, tryb edytora |
+| `js/map.js` | Mapa: filtry, grupowanie, wyszukiwarka, tracker postępu, ulubione, prywatne notatki, eksport/import postępu, linki `#z=id` i `#v=x,y,zoom`, tryb edytora |
 | `js/strona.js` | Wspólne dla wszystkich stron: baner zgód, reklamy po zgodzie, linki partnerskie |
 | `js/zglos.js`, `zglos.html` | Formularz zgłoszeń znaczników |
 | `poradniki/` | Poradniki (pisane ręcznie) |
@@ -36,29 +37,34 @@ i otwórz http://localhost:3000.
    - `id` – unikalny, małe litery, cyfry i myślniki, bez polskich znaków (np. `sklep-z-bronia-ocean-beach`). **Nie zmieniaj go później** – na nim opiera się zapisany postęp graczy i adres strony znacznika.
    - `kategoria` – `id` z `data/kategorie.json`
    - `nazwa`, `opis`, opcjonalnie `region`
+   - opcjonalnie `odpowiednik` (prawdziwe miejsce, np. „Ocean Drive, Miami”; niepusty tekst do 150 znaków) i `zrodlo` (`gtadb`, `zgloszenie` albo `gra`). Znacznik z `zrodlo: "gtadb"` dostaje na swojej stronie (jeśli ją ma) dopisek „zidentyfikowane przez społeczność GTADB, niepotwierdzone przed premierą”
 4. Uruchom `npm run build` (albo `node scripts/build.mjs`). Skrypt sprawdzi dane, a przy błędzie się zatrzyma i napisze, co poprawić.
 
 Znaczniki z `"przyklad": true` widać na mapie, ale nie dostają własnych stron ani wpisu w sitemap. **Po premierze usuń przykładowe znaczniki** z `data/znaczniki.json`.
 
-Znaczniki z kategorii ze spoilerami (misje) też nie dostają stron, żeby nie zdradzać fabuły w Google.
+Znaczniki z kategorii ze spoilerami (misje) też nie dostają stron, żeby nie zdradzać fabuły w Google. Kategorie z `bezStron: true` (m.in. punkty orientacyjne, sklepy, hotele, transport – setki punktów z GTADB) są na mapie, ale bez własnych stron, żeby nie zalać Google cienkimi podstronami.
 
 ## Po premierze: szybkie dodawanie znaczników
 
 1. Otwórz mapę z `?edytor`, kliknij miejsce, kliknij „Kopiuj”.
 2. Wklej wpis do `data/znaczniki.json`, uzupełnij `kategoria`, `nazwa`, `opis` (30-400 znaków), `region`.
-3. Usuń `"przyklad": true` (z przykładów, które zamieniasz na prawdziwe) i w razie potrzeby `bezStron` z kategorii w `data/kategorie.json` (kategoria „orientacyjne” ma je do premiery).
+3. Usuń `"przyklad": true` (z przykładów, które zamieniasz na prawdziwe) i w razie potrzeby `bezStron` z kategorii w `data/kategorie.json` (kategorie z danymi z GTADB mają je do premiery).
 4. `npm run build` – popraw wszystko, co wypisze walidacja (patrz niżej).
 5. Sprawdź kilka wygenerowanych `znaczniki/*.html` w przeglądarce (`npx serve`) oraz `node scripts/test-szablon.mjs`.
 6. Podbij `WERSJA` w `sw.js`, zrób commit.
 
 Zasady:
 - Tylko jawnie otwarte źródła (np. GTADB, CC BY 4.0) z atrybucją w stopce; nic z przecieków, nic cudzego bez licencji.
-- Kategorie `sklepy`, `bron`, `znajdzki` zostają puste do premiery.
+- Dane z GTADB (CC BY 4.0) są oznaczone jako niepotwierdzone przed premierą. Sklepy, hotele i transport mają punkty z GTADB; kategoria `bron` tylko sklepy z bronią nazwane w GTADB; `kryjowki` i `znajdzki` zostają puste do premiery.
 - `id` raz nadane się nie zmienia (postęp graczy i adres strony).
 
-Walidacja w `scripts/build.mjs` wypisuje **wszystkie** błędy naraz (plik, numer pozycji, id, podpowiedź) i kończy się kodem != 0: powtórzone lub niepoprawne `id`, nieznana kategoria, brak nazwy lub opisu, opis krótszy niż 30 albo dłuższy niż 400 znaków, `x`/`y` nie będące liczbami lub poza wymiarami mapy z `js/config.js`. **Ostrzeżenia** (nie przerywają builda): znaczniki z `przyklad: true` oraz dwa znaczniki bliżej niż 8 px od siebie.
+Walidacja w `scripts/build.mjs` wypisuje **wszystkie** błędy naraz (plik, numer pozycji, id, podpowiedź) i kończy się kodem != 0: powtórzone lub niepoprawne `id`, nieznana kategoria, brak nazwy lub opisu, opis krótszy niż 30 albo dłuższy niż 400 znaków, `x`/`y` nie będące liczbami lub poza wymiarami mapy z `js/config.js`. Sprawdza też pola opcjonalne: `odpowiednik` (niepusty tekst do 150 znaków), `zrodlo` (jedna z: `gtadb`, `zgloszenie`, `gra`), `region` (tekst), oraz `data/regiony.json` (tablica, unikalne `id`, nazwa, `x`/`y` w granicach mapy). **Ostrzeżenia** (nie przerywają builda): znaczniki z `przyklad: true` oraz dwa znaczniki leżące bliżej niż 8 px, które mają tę samą lub prawie tę samą nazwę (bez wielkości liter, ogonków, nawiasów i cyfr na końcu) albo identyczne `x`,`y`. Różne lokale blisko siebie (np. w jednym pasażu) nie dają ostrzeżenia.
 
-Test: `node scripts/test-szablon.mjs` buduje strony na tymczasowej kopii danych (ze zmyślonymi wpisami, tylko na test; repo zostaje nietknięte), sprawdza title/description, JSON-LD, canonical, linki wewnętrzne i walidację. Generator czyta też zmienne `VICEMAP_DANE` (katalog z JSON-ami) i `VICEMAP_WYJSCIE` (katalog wyjściowy).
+Test: `node scripts/test-szablon.mjs` buduje strony na tymczasowej kopii danych (ze zmyślonymi wpisami, tylko na test; repo zostaje nietknięte), sprawdza title/description, JSON-LD, canonical, linki wewnętrzne, walidację (w tym nowe pola, regiony i reguły ostrzeżeń) oraz dopiski „Pewność” i „Prawdziwy odpowiednik” na stronie znacznika. Generator czyta też zmienne `VICEMAP_DANE` (katalog z JSON-ami) i `VICEMAP_WYJSCIE` (katalog wyjściowy).
+
+## Dane gracza (tylko w przeglądarce)
+
+Zaliczone znaczniki, ulubione (gwiazdka), prywatne notatki (do 500 znaków na znacznik) i filtry trafiają do `localStorage` pod kluczami `vicemap.*` – nic nie jest wysyłane na serwer. Przycisk eksportu zapisuje plik `vicemap-postep.json` (format postępu **v2**: `zaliczone`, `ulubione`, `notatki`), a import wczytuje go z powrotem, także starszą wersję 1 (tylko `zaliczone`). Zmieniając format, podbij `WERSJA_POSTEPU` w `js/map.js` i zachowaj odczyt starych wersji.
 
 ## Podmiana mapy po premierze
 

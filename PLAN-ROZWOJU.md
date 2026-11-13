@@ -1,7 +1,7 @@
 # Plan rozwoju ViceMap
 
 Stan na 13.11.2026. Premiera GTA 6: **19.11.2026** (wg `poradniki/premiera.html`).
-Strona ma już: mapę z filtrami, wyszukiwarką i trackerem, zgłoszenia znaczników, 7 poradników, SEO (canonical, OG, sitemap), PWA, build i konfigurację Vercela. Opis techniczny jest w [README.md](README.md) – ten plik mówi tylko, **co zostało do zrobienia**.
+Strona ma już: mapę z filtrami, grupowaniem znaczników, wyszukiwarką, trackerem postępu, ulubionymi i prywatnymi notatkami (z eksportem/importem), setki niepotwierdzonych punktów z GTADB (CC BY 4.0), zgłoszenia znaczników, 13 poradników, SEO (canonical, OG, sitemap), PWA, build i konfigurację Vercela. Opis techniczny jest w [README.md](README.md) – ten plik mówi tylko, **co zostało do zrobienia**.
 
 ## Etap 0 – do 18.11 (blokery startu)
 
@@ -20,7 +20,7 @@ Nic tu nie wymaga programowania, ale bez tego strona nie istnieje dla Google.
 Tu wygrywa treść, nie kod.
 
 - [ ] **Własna mapa bazowa** zamiast `mapa.svg` – przerysowana, nie zrzut z gry (ryzyko DMCA). Potem: `js/config.js`, przeliczyć `x`/`y`, dopisać plik do `sw.js` i podbić `WERSJA`.
-- [ ] **Prawdziwe znaczniki** w `data/znaczniki.json`; usunąć wszystkie z `"przyklad": true`. Zacząć od tego, czego szukają najpierw: sklepy z bronią, kryjówki, sklepy z ubraniami.
+- [ ] **Prawdziwe znaczniki** w `data/znaczniki.json`. Stan na 13.11.2026: punkty z GTADB (niepotwierdzone przed premierą), brak przykładowych; kryjówki i znajdźki nadal puste. Po premierze zacząć od tego, czego szukają najpierw: sklepy z bronią, kryjówki, sklepy z ubraniami.
 - [ ] **Poradnik `kody.html`** – tabela kodów po premierze.
 - [ ] **`premiera.html`, `regiony.html`** – zaktualizować o fakty z gry, poprawić „Stan na …".
 - [ ] **`jak-zarobic.html`** – ma `noindex` do czasu prawdziwej treści; po uzupełnieniu zdjąć tag i uruchomić build.
@@ -31,7 +31,7 @@ Tu wygrywa treść, nie kod.
 
 - [ ] **Moderacja zgłoszeń** – zgłoszenia z Supabase czytać regularnie (Table Editor → `zgloszenia`), dobre przenosić do `znaczniki.json`.
 - [ ] **Kafelki zamiast jednego obrazka** – pełna mapa jako jeden plik będzie ciężka; przejść na `L.tileLayer`.
-- [ ] **Grupowanie znaczników** – dopiero gdy pinezki się zlewają.
+- [x] **Grupowanie znaczników** – zrobione (Leaflet.markercluster 1.5.3, stan na 13.11.2026).
 - [ ] **Poradniki pod frazy z Search Console** – brać tematy z tego, na co strona już się wyświetla.
 - [ ] **Strony kategorii i znaczników** – build je generuje; sprawdzić w Search Console, czy są indeksowane.
 - [ ] **Własne zdjęcie podglądu** (`img/og.png`) dopasowane do prawdziwej mapy.
@@ -52,7 +52,7 @@ Agenci leżą lokalnie w `.claude/agents/` (nie są w repo). Pracują na szkicac
 | `wideo` | Scenariusze TikTok / Reels / Shorts. Przed premierą: data i platformy; po: konkretne lokalizacje |
 | `opiekun-strony` | Dodawanie znaczników i poradników, build, drobne poprawki |
 
-Ważne: dopóki wszystkie znaczniki są przykładowe, agenci mają zakaz obiecywania „pełnej mapy". Realna promocja mapy zaczyna się dopiero po Etapie 1.
+Ważne: punkty z GTADB są niepotwierdzone, więc agenci nie obiecują „pełnej mapy". Realna promocja mapy zaczyna się dopiero po Etapie 1.
 
 ## Ryzyka
 
