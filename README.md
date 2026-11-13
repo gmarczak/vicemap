@@ -42,6 +42,24 @@ Znaczniki z `"przyklad": true` widać na mapie, ale nie dostają własnych stron
 
 Znaczniki z kategorii ze spoilerami (misje) też nie dostają stron, żeby nie zdradzać fabuły w Google.
 
+## Po premierze: szybkie dodawanie znaczników
+
+1. Otwórz mapę z `?edytor`, kliknij miejsce, kliknij „Kopiuj”.
+2. Wklej wpis do `data/znaczniki.json`, uzupełnij `kategoria`, `nazwa`, `opis` (30-400 znaków), `region`.
+3. Usuń `"przyklad": true` (z przykładów, które zamieniasz na prawdziwe) i w razie potrzeby `bezStron` z kategorii w `data/kategorie.json` (kategoria „orientacyjne” ma je do premiery).
+4. `npm run build` – popraw wszystko, co wypisze walidacja (patrz niżej).
+5. Sprawdź kilka wygenerowanych `znaczniki/*.html` w przeglądarce (`npx serve`) oraz `node scripts/test-szablon.mjs`.
+6. Podbij `WERSJA` w `sw.js`, zrób commit.
+
+Zasady:
+- Tylko jawnie otwarte źródła (np. GTADB, CC BY 4.0) z atrybucją w stopce; nic z przecieków, nic cudzego bez licencji.
+- Kategorie `sklepy`, `bron`, `znajdzki` zostają puste do premiery.
+- `id` raz nadane się nie zmienia (postęp graczy i adres strony).
+
+Walidacja w `scripts/build.mjs` wypisuje **wszystkie** błędy naraz (plik, numer pozycji, id, podpowiedź) i kończy się kodem != 0: powtórzone lub niepoprawne `id`, nieznana kategoria, brak nazwy lub opisu, opis krótszy niż 30 albo dłuższy niż 400 znaków, `x`/`y` nie będące liczbami lub poza wymiarami mapy z `js/config.js`. **Ostrzeżenia** (nie przerywają builda): znaczniki z `przyklad: true` oraz dwa znaczniki bliżej niż 8 px od siebie.
+
+Test: `node scripts/test-szablon.mjs` buduje strony na tymczasowej kopii danych (ze zmyślonymi wpisami, tylko na test; repo zostaje nietknięte), sprawdza title/description, JSON-LD, canonical, linki wewnętrzne i walidację. Generator czyta też zmienne `VICEMAP_DANE` (katalog z JSON-ami) i `VICEMAP_WYJSCIE` (katalog wyjściowy).
+
 ## Podmiana mapy po premierze
 
 1. Przygotuj obraz mapy (najlepiej **własny, przerysowany** – nie zrzut z gry, patrz „Ryzyka” niżej).

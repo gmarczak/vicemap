@@ -21,11 +21,17 @@
     for (const k of kategorie) select.append(new Option(k.nazwa, k.id));
   }).catch(() => {});
 
-  function pokaz(tekst, ok) {
+  // Błędy jako role=alert (czytnik przerywa i czyta), sukces jako status; fokus na komunikacie lub błędnym polu.
+  function pokaz(tekst, ok, pole) {
+    komunikat.hidden = true;
+    komunikat.setAttribute("role", ok ? "status" : "alert");
     komunikat.textContent = tekst;
     komunikat.className = "komunikat " + (ok ? "komunikat--ok" : "komunikat--blad");
     komunikat.hidden = false;
-    komunikat.scrollIntoView({ behavior: "smooth", block: "center" });
+    form.elements.opis.removeAttribute("aria-invalid");
+    if (pole) { pole.setAttribute("aria-invalid", "true"); pole.focus(); }
+    else komunikat.focus({ preventScroll: true });
+    komunikat.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
   }
 
   const naLiczbe = (v) => (v === "" || v == null ? null : Math.round(Number(v)));
@@ -52,7 +58,7 @@
       kontakt: form.elements.kontakt.value.trim() || null
     };
     if (dane.opis.length < 10) {
-      pokaz("Opisz miejsce trochę dokładniej (min. 10 znaków).", false);
+      pokaz("Opisz miejsce trochę dokładniej (min. 10 znaków).", false, form.elements.opis);
       return;
     }
 

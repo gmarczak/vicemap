@@ -1,40 +1,90 @@
 // Generator stron pod Google: jedna strona na znacznik, jedna na kategorię, plus sitemap.xml.
 // Uruchom po każdej zmianie w data/*.json:   node scripts/build.mjs
 // Bez zależności – wystarczy Node 18+.
+// Test na kopii danych (nie rusza repo):  VICEMAP_DANE=<katalog z kategorie.json i znaczniki.json> VICEMAP_WYJSCIE=<katalog> node scripts/build.mjs
 import { readFile, writeFile, mkdir, readdir, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const DANE = process.env.VICEMAP_DANE ? resolve(process.env.VICEMAP_DANE) : join(ROOT, "data");
+const OUT = process.env.VICEMAP_WYJSCIE ? resolve(process.env.VICEMAP_WYJSCIE) : ROOT;
 const DOMENA = "https://vicemap.pl";
 const DZIS = new Date().toISOString().slice(0, 10);
 
-const kategorie = JSON.parse(await readFile(join(ROOT, "data/kategorie.json"), "utf8"));
-const znaczniki = JSON.parse(await readFile(join(ROOT, "data/znaczniki.json"), "utf8"));
+async function wczytaj(nazwa) {
+  try {
+    return JSON.parse(await readFile(join(DANE, nazwa), "utf8"));
+  } catch (e) {
+    console.error(`Nie da się wczytać ${nazwa}: ${e.message}\nPodpowiedź: sprawdź przecinki, cudzysłowy i nawiasy w pliku.`);
+    process.exit(1);
+  }
+}
+const kategorie = await wczytaj("kategorie.json");
+const znaczniki = await wczytaj("znaczniki.json");
 
-// --- Walidacja danych: lepiej zatrzymać build niż wypuścić zepsutą mapę ---
+// Wymiary mapy z js/config.js (znaczniki muszą mieścić się w obrazie).
+const cfg = await readFile(join(ROOT, "js/config.js"), "utf8");
+const SZER = Number(/szerokosc:\s*(\d+)/.exec(cfg)?.[1]);
+const WYS = Number(/wysokosc:\s*(\d+)/.exec(cfg)?.[1]);
+
+// --- Walidacja danych: lepiej zatrzymać build niż wypuścić zepsutą mapę. Zbieramy WSZYSTKIE błędy naraz. ---
 const bledy = [];
+const ostrzezenia = [];
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const OPIS_MIN = 30, OPIS_MAX = 400, BLISKO_PX = 8;
 const katPoId = new Map();
-for (const k of kategorie) {
-  if (!ID.test(k.id)) bledy.push(`Kategoria: niepoprawne id "${k.id}" (małe litery, cyfry, myślniki)`);
-  if (katPoId.has(k.id)) bledy.push(`Kategoria: powtórzone id "${k.id}"`);
+kategorie.forEach((k, i) => {
+  const gdzie = `kategorie.json, pozycja ${i + 1} ("${k.id ?? "?"}")`;
+  if (!k.id || !ID.test(k.id)) bledy.push(`${gdzie}: niepoprawne id. Użyj małych liter, cyfr i myślników, np. "sklepy".`);
+  if (katPoId.has(k.id)) bledy.push(`${gdzie}: powtórzone id. Każda kategoria musi mieć inne id.`);
+  for (const pole of ["nazwa", "liczbaPojedyncza", "kolor", "znak"]) if (!k[pole]) bledy.push(`${gdzie}: brak pola "${pole}".`);
   katPoId.set(k.id, k);
+});
+const widziane = new Map();
+znaczniki.forEach((z, i) => {
+  const gdzie = `znaczniki.json, pozycja ${i + 1} ("${z.id || z.nazwa || "?"}")`;
+  if (!z.id || !ID.test(z.id)) bledy.push(`${gdzie}: niepoprawne id. Użyj małych liter, cyfr i myślników, bez polskich znaków, np. "sklep-ocean-beach".`);
+  else if (widziane.has(z.id)) bledy.push(`${gdzie}: id powtórzone (pierwszy raz na pozycji ${widziane.get(z.id)}). Id musi być unikalne.`);
+  else widziane.set(z.id, i + 1);
+  if (!katPoId.has(z.kategoria)) bledy.push(`${gdzie}: nieznana kategoria "${z.kategoria}". Dozwolone: ${[...katPoId.keys()].join(", ")}.`);
+  if (!z.nazwa || !String(z.nazwa).trim()) bledy.push(`${gdzie}: brak nazwy. Dodaj pole "nazwa".`);
+  const opis = typeof z.opis === "string" ? z.opis.trim() : "";
+  if (!opis) bledy.push(`${gdzie}: brak opisu. Dodaj pole "opis" (${OPIS_MIN}-${OPIS_MAX} znaków).`);
+  else if (opis.length < OPIS_MIN) bledy.push(`${gdzie}: opis zbyt krótki (${opis.length} znaków, minimum ${OPIS_MIN}). Dopisz, co to za miejsce i jak je rozpoznać.`);
+  else if (opis.length > OPIS_MAX) bledy.push(`${gdzie}: opis zbyt długi (${opis.length} znaków, maksimum ${OPIS_MAX}). Skróć go.`);
+  if (typeof z.x !== "number" || typeof z.y !== "number" || !Number.isFinite(z.x) || !Number.isFinite(z.y)) {
+    bledy.push(`${gdzie}: x i y muszą być liczbami (bez cudzysłowów). Skopiuj wpis z trybu ?edytor.`);
+  } else if (SZER && WYS && (z.x < 0 || z.x > SZER || z.y < 0 || z.y > WYS)) {
+    bledy.push(`${gdzie}: x=${z.x}, y=${z.y} poza mapą (x: 0-${SZER}, y: 0-${WYS}). Przelicz współrzędne albo skopiuj je ponownie z ?edytor.`);
+  }
+  if (z.przyklad) ostrzezenia.push(`${gdzie}: znacznik przykładowy ("przyklad": true) – nie dostanie strony ani wpisu w sitemap. Po premierze usuń go albo zamień na prawdziwy.`);
+});
+for (let i = 0; i < znaczniki.length; i++) {
+  for (let j = i + 1; j < znaczniki.length; j++) {
+    const a = znaczniki[i], b = znaczniki[j];
+    if (Number.isFinite(a.x + a.y + b.x + b.y) && Math.hypot(a.x - b.x, a.y - b.y) < BLISKO_PX) {
+      ostrzezenia.push(`znaczniki.json: "${a.id}" (pozycja ${i + 1}) i "${b.id}" (pozycja ${j + 1}) leżą w odległości mniejszej niż ${BLISKO_PX} px – to może być duplikat.`);
+    }
+  }
 }
-const widziane = new Set();
-for (const z of znaczniki) {
-  const gdzie = `Znacznik "${z.id || z.nazwa || "?"}"`;
-  if (!z.id || !ID.test(z.id)) bledy.push(`${gdzie}: niepoprawne id (małe litery, cyfry, myślniki, bez polskich znaków)`);
-  if (widziane.has(z.id)) bledy.push(`${gdzie}: powtórzone id`);
-  widziane.add(z.id);
-  if (!katPoId.has(z.kategoria)) bledy.push(`${gdzie}: nieznana kategoria "${z.kategoria}"`);
-  if (!z.nazwa) bledy.push(`${gdzie}: brak nazwy`);
-  if (!Number.isFinite(z.x) || !Number.isFinite(z.y)) bledy.push(`${gdzie}: x i y muszą być liczbami`);
-}
+if (ostrzezenia.length) console.warn(`Ostrzeżenia (${ostrzezenia.length}):\n- ${ostrzezenia.join("\n- ")}\n`);
 if (bledy.length) {
-  console.error("Błędy w danych:\n- " + bledy.join("\n- "));
+  console.error(`Znaleziono błędy w danych (${bledy.length}). Popraw je i uruchom build ponownie:\n- ${bledy.join("\n- ")}`);
   process.exit(1);
+}
+
+// Skraca tekst do max znaków: najchętniej na końcu zdania, inaczej na granicy słowa z jednym wielokropkiem.
+function skroc(tekst, max) {
+  const t = String(tekst ?? "").replace(/\s+/g, " ").trim();
+  if (t.length <= max) return t;
+  const okno = t.slice(0, max);
+  const koniecZdania = Math.max(okno.lastIndexOf(". "), okno.lastIndexOf("! "), okno.lastIndexOf("? "));
+  if (koniecZdania >= max * 0.5) return okno.slice(0, koniecZdania + 1);
+  const spacja = okno.lastIndexOf(" ");
+  const ciecie = (spacja > max * 0.5 ? okno.slice(0, spacja) : okno.slice(0, max - 1)).replace(/[\s,;:–—-]+$/, "").replace(/[.…]+$/, "");
+  return ciecie + "…";
 }
 
 // --- Szablon strony ---
@@ -114,12 +164,20 @@ const wygenerowane = [];
 const odl = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const lista = (items) => `      <ul>\n${items.map((o) => `        <li><a href="/znaczniki/${o.id}.html">${esc(o.nazwa)}</a></li>`).join("\n")}\n      </ul>`;
 
+// Tytuł do ~60 znaków: bierze pierwszy wariant, który się mieści.
+const tytulDo60 = (...warianty) => warianty.find((w) => w.length <= 60) || skroc(warianty[warianty.length - 1], 60);
+
 // --- Strony znaczników ---
-await mkdir(join(ROOT, "znaczniki"), { recursive: true });
+await mkdir(join(OUT, "znaczniki"), { recursive: true });
 for (const z of publiczne) {
   const kat = katPoId.get(z.kategoria);
   const sciezka = `znaczniki/${z.id}.html`;
-  const opis = `${z.nazwa} w GTA 6 (${kat.liczbaPojedyncza}${z.region ? ", " + z.region : ""}): ${z.opis ? z.opis.replace(/\s+/g, " ").replace(/^(.{0,110})\s.{1,}$/, (m, g) => (m.length > 110 ? g + "…" : m)) : "lokalizacja na mapie Leonidy"}. Zobacz miejsce na interaktywnej mapie.`;
+  const wstep = `${z.nazwa} w GTA 6 (${kat.liczbaPojedyncza}${z.region ? ", " + z.region : ""}). `;
+  const opis = wstep + (z.opis ? skroc(z.opis, 155 - wstep.length) : "Lokalizacja na interaktywnej mapie Leonidy.");
+  const tytul = tytulDo60(`GTA 6: ${z.nazwa} – gdzie jest | ViceMap`, `GTA 6: ${z.nazwa} – gdzie jest`, `${z.nazwa} w GTA 6 | ViceMap`, `${z.nazwa} – GTA 6`);
+  const wKat = publiczne.filter((o) => o.kategoria === z.kategoria);
+  const idx = wKat.indexOf(z);
+  const poprz = wKat[idx - 1], nast = wKat[idx + 1];
   const inne = publiczne.filter((o) => o.kategoria === z.kategoria && o.id !== z.id).sort((a, b) => odl(a, z) - odl(b, z)).slice(0, 6);
   const wRegionie = z.region ? publiczne.filter((o) => o.region === z.region && o.kategoria !== z.kategoria && o.id !== z.id).sort((a, b) => odl(a, z) - odl(b, z)).slice(0, 6) : [];
   const sciezkaOkr = [["/", "Mapa"], [`/kategorie/${kat.id}.html`, kat.nazwa], [null, z.nazwa]];
@@ -136,10 +194,14 @@ ${lista(inne)}
       <p><a href="/kategorie/${kat.id}.html">Wszystkie: ${esc(kat.nazwa.toLowerCase())}</a></p>` : ""}
 ${wRegionie.length ? `      <h2>Też w okolicy: ${esc(z.region)}</h2>
 ${lista(wRegionie)}` : ""}
+${poprz || nast ? `      <nav class="poprzedni-nastepny" aria-label="Poprzedni i następny w kategorii">
+${poprz ? `        <a rel="prev" href="/znaczniki/${poprz.id}.html">← ${esc(poprz.nazwa)}</a>` : ""}
+${nast ? `        <a rel="next" href="/znaczniki/${nast.id}.html">${esc(nast.nazwa)} →</a>` : ""}
+      </nav>` : ""}
       <p class="zrodla">Więcej o regionach Leonidy znajdziesz w <a href="/poradniki/regiony.html">poradniku po regionach</a>.</p>
     </article>`;
-  await writeFile(join(ROOT, sciezka), strona({
-    sciezka, tytul: `GTA 6: ${z.nazwa} – gdzie jest | ViceMap`, opis, tresc,
+  await writeFile(join(OUT, sciezka), strona({
+    sciezka, tytul, opis, tresc,
     ld: { "@context": "https://schema.org", "@graph": [
       { "@type": "Article", headline: `GTA 6: ${z.nazwa} – gdzie jest`, description: opis, inLanguage: "pl", dateModified: DZIS, mainEntityOfPage: DOMENA + "/" + sciezka,
         image: DOMENA + "/img/og.png", author: { "@type": "Organization", name: "ViceMap" }, publisher: { "@type": "Organization", name: "ViceMap", url: DOMENA } },
@@ -152,7 +214,7 @@ ${lista(wRegionie)}` : ""}
 }
 
 // --- Strony kategorii (tylko te, które mają prawdziwe znaczniki) ---
-await mkdir(join(ROOT, "kategorie"), { recursive: true });
+await mkdir(join(OUT, "kategorie"), { recursive: true });
 for (const kat of kategorie) {
   const pozycje = publiczne.filter((z) => z.kategoria === kat.id);
   if (!pozycje.length) continue;
@@ -174,9 +236,9 @@ ${inneKat.length ? `    <h2>Inne kategorie</h2>
 ${inneKat.map((k) => `      <li><a href="/kategorie/${k.id}.html">${esc(k.nazwa)}</a></li>`).join("\n")}
     </ul>` : ""}
     <p class="zrodla">Zobacz też <a href="/poradniki/">poradniki do GTA 6</a> i <a href="/poradniki/regiony.html">opis regionów Leonidy</a>.</p>`;
-  await writeFile(join(ROOT, sciezka), strona({
-    sciezka, tytul: `GTA 6 ${kat.nazwa.toLowerCase()} – wszystkie lokalizacje na mapie | ViceMap`,
-    opis: `Wszystkie ${kat.nazwa.toLowerCase()} w GTA 6 (${pozycje.length}) na interaktywnej mapie po polsku. ${kat.opis || ""}`.trim(),
+  await writeFile(join(OUT, sciezka), strona({
+    sciezka, tytul: tytulDo60(`GTA 6: ${kat.nazwa.toLowerCase()} – lista i mapa | ViceMap`, `GTA 6: ${kat.nazwa.toLowerCase()} – lista i mapa`, `${kat.nazwa} w GTA 6`),
+    opis: skroc(`${kat.nazwa} w GTA 6: lista miejsc (${pozycje.length}) na interaktywnej mapie po polsku. ${kat.opis || ""}`, 155),
     tresc, typOg: "website",
     ld: { "@context": "https://schema.org", "@graph": [
       { "@type": "CollectionPage", name: `GTA 6 – ${kat.nazwa}`, inLanguage: "pl", url: DOMENA + "/" + sciezka, description: kat.opis || undefined },
@@ -189,9 +251,9 @@ ${inneKat.map((k) => `      <li><a href="/kategorie/${k.id}.html">${esc(k.nazwa)
 
 // --- Sprzątanie stron po usuniętych znacznikach i kategoriach ---
 for (const folder of ["znaczniki", "kategorie"]) {
-  for (const plik of await readdir(join(ROOT, folder))) {
+  for (const plik of await readdir(join(OUT, folder))) {
     if (plik.endsWith(".html") && !wygenerowane.includes(`${folder}/${plik}`)) {
-      await rm(join(ROOT, folder, plik));
+      await rm(join(OUT, folder, plik));
       console.log("Usunięto nieaktualną stronę:", `${folder}/${plik}`);
     }
   }
@@ -205,7 +267,7 @@ for (const plik of (await readdir(join(ROOT, "poradniki"))).sort()) {
   if (!/name="robots"[^>]*noindex/.test(html)) reczne.push("poradniki/" + plik);
 }
 const adresy = [...reczne, ...wygenerowane];
-await writeFile(join(ROOT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>
+await writeFile(join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${adresy.map((a) => `  <url><loc>${DOMENA}/${a}</loc><lastmod>${DZIS}</lastmod></url>`).join("\n")}
 </urlset>
