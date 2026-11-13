@@ -100,3 +100,35 @@ Na Vercelu `vercel.json` uruchamia `node scripts/build.mjs` przy każdym deployu
 ## Ryzyka
 
 Strona jest nieoficjalna. Rockstar toleruje niekomercyjne użycie materiałów z gier i może zażądać usunięcia w każdej chwili. Dlatego: bez logo GTA i Rockstar, bez przecieków, bez spoilerów, a mapa bazowa najlepiej własna.
+
+## Dzień premiery (19.11.2026) – checklista
+
+Kolejność, od treści do wdrożenia:
+
+1. **Odliczanie i teksty „niepotwierdzone”.** Odliczanie (`js/map.js`, `stanOdliczania`) samo zmienia się na „Gra jest już dostępna” o lokalnej północy 19.11.2026 użytkownika, bez przeładowania. Po premierze usuń z danych i tekstów sformułowania „niepotwierdzone przed premierą” (popup: `blokDowodu` w `js/map.js`, opisy kategorii, strona główna) tam, gdzie punkt potwierdzono w grze.
+2. **Poradnik premiery:** `poradniki/premiera.html` (godziny odblokowania, preload, platformy), `poradniki/preload-i-rozmiar*.html` (rozmiar po instalacji), poradnik o cenach (ceny/edycje), PC – jeśli padnie ogłoszenie.
+3. **Tabela kodów** w `kody.html` – odkomentuj szablon i wpisz sprawdzone w grze kody. **`poradniki/jak-zarobic.html`** – uzupełnij prawdziwą treścią, usuń `noindex`. **Regiony wg gry** – popraw `data/regiony.json` (nazwy, środki `x`/`y`) i linki `#v=x,y,zoom` w poradniku o regionach.
+4. **Znaczniki:** `node scripts/dodaj-znaczniki.mjs plik.csv --zapisz` (CSV lub JSON z polami `nazwa`, `kategoria`, `x`, `y`, `opis`, `region`, opcjonalnie `odpowiednik`, `zrodlo`). Pojedyncze wpisy: mapa z `?edytor` → „Kopiuj wpis”. Usuń znaczniki z `przyklad: true`.
+5. **Kontrola danych:** `node scripts/kontrola-danych.mjs`, potem `npm run build` (waliduje dane, generuje strony i sitemap), `node scripts/test-szablon.mjs`.
+6. **Testy i pomiary:** `node scripts/test-odliczanie.mjs`, `node scripts/pomiary.mjs` (poniżej).
+7. **`sw.js`:** podbij `WERSJA` (i dopisz nowe pliki do cache).
+8. `git checkout sitemap.xml`, jeśli build zmienił w nim tylko daty.
+9. **Wdrożenie:** commit → push do `main` → Vercel buduje sam; sprawdź na produkcji mapę, popup, odliczanie i `/poradniki/premiera.html`.
+
+## Pomiary i testy
+
+- `node scripts/test-odliczanie.mjs` – uruchamia logikę odliczania (wycinaną z `js/map.js`) w procesach z `TZ` = Europe/Warsaw, America/New_York, Pacific/Auckland, UTC, Pacific/Kiritimati i sprawdza stan 1 ms przed i w chwili lokalnej północy 19.11.2026.
+- `node scripts/pomiary.mjs` – rozmiary zasobów strony mapy (surowe i gzip).
+
+Pomiary z 13.11.2026 (Chrome w panelu, emulacja telefonu 375x812, serwer lokalny, bez throttlingu sieci i CPU – wartości orientacyjne):
+
+| Metryka | Wynik |
+| --- | --- |
+| Żądania strony mapy | 13 (HTML, 3 CSS, 5 JS, `mapa.webp`, 3 JSON, ikona) |
+| Waga zasobów (transfer) | ok. 1,3 MB; `mapa.webp` 903 kB (nie kompresuje się), `znaczniki.json` 159 kB / 17 kB gzip, `leaflet.js` 148 kB / 42 kB gzip, `map.js` 46 kB / 14 kB gzip, `style.css` 18,5 kB / 5 kB gzip |
+| DOMContentLoaded / load | ok. 180 ms |
+| Czas do pierwszych znaczników | ok. 80 ms po starcie ładowania ramki |
+| Elementy DOM / znaczniki na starcie | 458 / 44 (reszta w klastrach) |
+| Long tasks | 0 |
+
+Wniosek: bez wąskich gardeł, optymalizacji (lazy-init, chunkowanie) nie wprowadzano. Po dodaniu setek znaczników zmierz ponownie.
