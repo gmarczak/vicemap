@@ -36,7 +36,7 @@
     <h1>Zgłoś znacznik</h1>
     <p>Znalazłeś w grze coś, czego nie ma na mapie, albo widzisz błąd? Opisz to – sprawdzimy i dodamy. Nie wysyłaj spoilerów fabuły w opisie.</p>
 
-    <div id="komunikat" class="komunikat" role="status" hidden></div>
+    <div id="komunikat" class="komunikat" role="status" tabindex="-1" hidden></div>
 
     <form id="formularz-zgloszenia" class="formularz" novalidate>
       <label for="typ">Rodzaj zgłoszenia</label>
@@ -52,24 +52,24 @@
       </select>
 
       <label for="nazwa">Nazwa miejsca</label>
-      <input id="nazwa" name="nazwa" type="text" maxlength="120" placeholder="np. sklep z bronią przy plaży">
+      <input id="nazwa" name="nazwa" type="text" maxlength="120" autocomplete="off" placeholder="np. sklep z bronią przy plaży">
 
       <label for="opis">Opis i jak tam dojść</label>
-      <textarea id="opis" name="opis" maxlength="2000" required placeholder="Gdzie dokładnie jest, co tam można zrobić, jak dojechać."></textarea>
+      <textarea id="opis" name="opis" maxlength="2000" required aria-required="true" aria-describedby="komunikat" placeholder="Gdzie dokładnie jest, co tam można zrobić, jak dojechać."></textarea>
 
       <label for="znacznik_id">Identyfikator znacznika (przy poprawce)</label>
-      <input id="znacznik_id" name="znacznik_id" type="text" maxlength="100">
-      <p class="pomoc">Uzupełnia się sam, gdy klikniesz „Zgłoś poprawkę” w dymku na mapie.</p>
+      <input id="znacznik_id" name="znacznik_id" type="text" maxlength="100" autocomplete="off" aria-describedby="znacznik-pomoc">
+      <p class="pomoc" id="znacznik-pomoc">Uzupełnia się sam, gdy klikniesz „Zgłoś poprawkę” w dymku na mapie.</p>
 
       <div class="formularz__wspolrzedne">
         <label for="x">Współrzędne na mapie (opcjonalnie)</label>
-        <input id="x" name="x" type="text" inputmode="numeric" placeholder="x" style="max-width:120px;display:inline-block">
-        <input id="y" name="y" type="text" inputmode="numeric" placeholder="y" style="max-width:120px;display:inline-block">
+        <input id="x" name="x" type="text" inputmode="numeric" autocomplete="off" aria-label="Współrzędna x" placeholder="x" style="max-width:120px;display:inline-block">
+        <input id="y" name="y" type="text" inputmode="numeric" autocomplete="off" aria-label="Współrzędna y" placeholder="y" style="max-width:120px;display:inline-block">
       </div>
 
       <label for="kontakt">Nick lub e-mail (opcjonalnie)</label>
-      <input id="kontakt" name="kontakt" type="text" maxlength="120">
-      <p class="pomoc">Tylko jeśli chcesz, żebyśmy mogli dopytać lub podziękować. Szczegóły w <a href="/polityka-prywatnosci.html">polityce prywatności</a>.</p>
+      <input id="kontakt" name="kontakt" type="text" maxlength="120" autocomplete="off" aria-describedby="kontakt-pomoc">
+      <p class="pomoc" id="kontakt-pomoc">Tylko jeśli chcesz, żebyśmy mogli dopytać lub podziękować. Szczegóły w <a href="/polityka-prywatnosci.html">polityce prywatności</a>.</p>
 
       <div aria-hidden="true" style="position:absolute;left:-9999px">
         <label for="strona_www">Nie wypełniaj tego pola</label>

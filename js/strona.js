@@ -41,11 +41,13 @@
   }
 
   // --- Baner zgód (pokazuje się tylko, gdy jest coś, na co trzeba zgody) ---
-  function pokazBaner() {
+  function pokazBaner(zFocusem) {
+    const poprzedni = document.activeElement;
     const baner = document.createElement("div");
     baner.className = "zgody";
     baner.setAttribute("role", "dialog");
     baner.setAttribute("aria-label", "Zgoda na pliki cookie");
+    baner.tabIndex = -1;
     baner.innerHTML =
       '<p>Używamy plików cookie do wyświetlania reklam, które utrzymują stronę. ' +
       'Szczegóły w <a href="/polityka-prywatnosci.html">polityce prywatności</a>.</p>' +
@@ -58,16 +60,24 @@
       if (!wybor) return;
       zapisz("zgoda", wybor);
       baner.remove();
+      if (zFocusem && poprzedni && poprzedni.focus) poprzedni.focus();
       if (wybor === "tak") zaladujReklamy();
     });
+    // Esc tylko zamyka baner (bez zapisu zgody, reklamy się nie ładują); wybór wróci przy następnej wizycie.
+    baner.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      baner.remove();
+      if (zFocusem && poprzedni && poprzedni.focus) poprzedni.focus();
+    });
     document.body.append(baner);
+    if (zFocusem) baner.focus(); // fokus tylko po akcji użytkownika, nie przy wczytaniu strony
   }
 
   for (const b of document.querySelectorAll("[data-zmien-zgode]")) {
     b.addEventListener("click", (e) => {
       e.preventDefault();
       zapisz("zgoda", "");
-      if (!document.querySelector(".zgody")) pokazBaner();
+      if (!document.querySelector(".zgody")) pokazBaner(true);
     });
   }
 

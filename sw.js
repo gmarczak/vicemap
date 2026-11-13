@@ -1,6 +1,7 @@
 // Tryb offline: strony i znaczniki najpierw z sieci (zawsze świeże), reszta z pamięci podręcznej.
 // Po zmianie listy plików poniżej podbij numer wersji.
-const WERSJA = "vicemap-v5";
+const WERSJA = "vicemap-v6";
+// Bez tych plików instalacja SW się nie uda (mapa i jej zależności).
 const PODSTAWOWE = [
   "/",
   "/style.css",
@@ -14,9 +15,41 @@ const PODSTAWOWE = [
   "/vendor/leaflet/leaflet.css",
   "/img/ikona.svg"
 ];
+// Dodatki: błąd pobrania jednego z nich nie blokuje instalacji.
+const DODATKOWE = [
+  "/404.html", "/poradniki/", "/zglos.html", "/js/zglos.js", "/js/mini-mapa.js", "/manifest.webmanifest",
+  "/vendor/leaflet/images/layers.png", "/vendor/leaflet/images/layers-2x.png",
+  "/vendor/leaflet/images/marker-icon.png", "/vendor/leaflet/images/marker-icon-2x.png", "/vendor/leaflet/images/marker-shadow.png"
+];
+// Pliki, które się nie zmieniają: raz zapisane nie są pobierane ponownie (mapa.webp ma ok. 900 KB).
+const NIEZMIENNE = ["/mapa.webp", "/vendor/"];
+const LIMIT_WPISOW = 120; // ponad tyle usuwamy najstarsze odwiedzone strony
+
+// Klucz bez ?query i #hash: stan mapy w URL (?x=..&y=..) nie mnoży wpisów i dopasowuje się do zapisanej strony.
+const klucz = (url) => { const u = new URL(url); return u.origin + u.pathname; };
+const zCache = (zadanie) => caches.match(klucz(zadanie.url));
+
+async function zapisz(zadanie, odp) {
+  try {
+    const c = await caches.open(WERSJA);
+    await c.put(klucz(zadanie.url), odp);
+    const wpisy = await c.keys();
+    let nadmiar = wpisy.length - LIMIT_WPISOW;
+    if (nadmiar <= 0) return;
+    const rdzen = new Set([...PODSTAWOWE, ...DODATKOWE].map((p) => location.origin + p));
+    for (const w of wpisy) { // keys() zwraca od najstarszych
+      if (nadmiar <= 0) break;
+      if (!rdzen.has(w.url)) { await c.delete(w); nadmiar--; }
+    }
+  } catch (err) { /* brak miejsca (quota) – działamy dalej bez zapisu */ }
+}
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(WERSJA).then((c) => c.addAll(PODSTAWOWE)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(WERSJA)
+      .then((c) => c.addAll(PODSTAWOWE).then(() => Promise.allSettled(DODATKOWE.map((u) => c.add(u)))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (e) => {
@@ -31,34 +64,33 @@ self.addEventListener("fetch", (e) => {
   const zadanie = e.request;
   const url = new URL(zadanie.url);
   if (zadanie.method !== "GET" || url.origin !== location.origin) return;
+  if (zadanie.headers.has("range")) return; // odpowiedzi 206 nie nadają się do cache
 
-  const swieze = zadanie.mode === "navigate" || url.pathname.startsWith("/data/");
-  if (swieze) {
-    // Najpierw sieć, a bez internetu ostatnia zapisana wersja.
+  const nawigacja = zadanie.mode === "navigate";
+  if (nawigacja || url.pathname.startsWith("/data/")) {
+    // Najpierw sieć, a bez internetu ostatnia zapisana wersja (nieodwiedzona strona: mapa).
     e.respondWith(
       fetch(zadanie)
         .then((odp) => {
-          const kopia = odp.clone();
-          caches.open(WERSJA).then((c) => c.put(zadanie, kopia));
+          if (odp.ok) e.waitUntil(zapisz(zadanie, odp.clone()));
           return odp;
         })
-        .catch(() => caches.match(zadanie).then((z) => z || caches.match("/")))
+        .catch(async () => (await zCache(zadanie)) || (nawigacja && (await caches.match(location.origin + "/"))) || Response.error())
     );
     return;
   }
 
-  // Pliki statyczne: od razu z pamięci, w tle odświeżenie.
+  const niezmienny = NIEZMIENNE.some((p) => url.pathname.startsWith(p));
   e.respondWith(
-    caches.match(zadanie).then((zapisane) => {
+    zCache(zadanie).then((zapisane) => {
+      if (zapisane && niezmienny) return zapisane;
+      // Reszta statyków: od razu z pamięci, w tle odświeżenie.
       const zSieci = fetch(zadanie)
         .then((odp) => {
-          if (odp.ok) {
-            const kopia = odp.clone();
-            caches.open(WERSJA).then((c) => c.put(zadanie, kopia));
-          }
+          if (odp.status === 200) e.waitUntil(zapisz(zadanie, odp.clone()));
           return odp;
         })
-        .catch(() => zapisane);
+        .catch(() => zapisane || Response.error());
       return zapisane || zSieci;
     })
   );
