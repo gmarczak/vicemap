@@ -1,6 +1,6 @@
 // Tryb offline: strony i znaczniki najpierw z sieci (zawsze świeże), reszta z pamięci podręcznej.
 // Po zmianie listy plików poniżej podbij numer wersji.
-const WERSJA = "vicemap-v6";
+const WERSJA = "vicemap-v7";
 // Bez tych plików instalacja SW się nie uda (mapa i jej zależności).
 const PODSTAWOWE = [
   "/",
