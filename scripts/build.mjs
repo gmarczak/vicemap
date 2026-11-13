@@ -304,13 +304,39 @@ const wierszeTabeli = (tab, kolumny) => tab.slice().sort(sortPl).map((z) => {
   return `        <tr>${komorki.join("")}</tr>`;
 }).join("\n");
 const naglowkiTabeli = { nazwa: "Nazwa", kategoria: "Kategoria", okolica: "Okolica", odpowiednik: "Odpowiednik", mapa: "Mapa" };
-const tabela = (tab, kolumny) => `    <table>
+const tabela = (tab, kolumny, nazwaListy) => `    <div class="tabela-wrap" role="region" tabindex="0" aria-label="Lista miejsc: ${esc(nazwaListy)}">
+    <table>
       <thead><tr>${kolumny.map((k) => `<th scope="col">${naglowkiTabeli[k]}</th>`).join("")}</tr></thead>
       <tbody>
 ${wierszeTabeli(tab, kolumny)}
       </tbody>
-    </table>`;
+    </table>
+    </div>`;
 const zOdp = (tab) => tab.filter((z) => z.odpowiednik).length;
+
+// Obrazy z img/ dostarcza osobny proces: tag <img> powstaje tylko, gdy plik istnieje.
+const jestObraz = (plik) => existsSync(join(ROOT, "img", plik));
+const GRAFIKA_UWAGA = '<p class="grafika-uwaga">Grafika: fragment mapy GTADB / Yanis V17 (CC BY 4.0)</p>';
+const hero = ({ plik, alt, h1, lead }) => `    <header class="hero">
+      <img class="hero__img" src="/img/${plik}" width="1200" height="420" alt="${esc(alt)}" loading="eager" fetchpriority="high">
+      <div class="hero__tresc"><h1>${h1}</h1>${lead ? `<p class="hero__lead">${lead}</p>` : ""}</div>
+    </header>
+    ${GRAFIKA_UWAGA}`;
+const liczby = (pozycje) => {
+  const li = pozycje.filter(([n]) => n > 0).map(([n, podpis]) => `<li class="liczba"><strong>${n}</strong><span>${podpis}</span></li>`);
+  return li.length ? `    <ul class="liczby">${li.join("")}</ul>` : "";
+};
+const karta = ({ href, plik, w, h, alt, tytul, opis }) => `      <li><a class="karta" href="${href}">${plik && jestObraz(plik) ? `<img class="karta__img" src="/img/${plik}" loading="lazy" width="${w}" height="${h}" alt="${esc(alt)}">` : ""}<span class="karta__tytul">${esc(tytul)}</span>${opis ? `<span class="karta__opis">${esc(opis)}</span>` : ""}</a></li>`;
+const kartaKat = (k, n) => karta({ href: n >= MIN_STRONA ? `/kategorie/${k.id}.html` : hashMapyKat(k.id), plik: `kat-${k.id}.webp`, w: 600, h: 400, alt: `Mapa wyspy z pinezkami: ${k.nazwa.toLowerCase()}`, tytul: k.nazwa, opis: punktow(n) });
+const kartaReg = (x, n) => karta({ href: n >= MIN_STRONA ? `/regiony/${x.id}.html` : `/#v=${x.x},${x.y},1`, plik: `baner-${x.id}.webp`, w: 1200, h: 420, alt: `Fragment mapy GTADB: okolice ${x.nazwa}`, tytul: x.nazwa, opis: n ? punktow(n) : "pokaż na mapie" });
+const karty = (wiersze, kompakt = false) => `    <ul class="karty${kompakt ? " karty--kompakt" : ""}">\n${wiersze.join("\n")}\n    </ul>`;
+const zobaczTez = () => karty([
+  karta({ href: "/poradniki/", tytul: "Poradniki do GTA 6" }),
+  karta({ href: "/poradniki/regiony.html", tytul: "Regiony Leonidy" }),
+  karta({ href: "/o-projekcie.html", tytul: "Skąd mamy dane" })
+], true);
+const kartyZObrazem = (prefiks, ids) => ids.some((id) => jestObraz(`${prefiks}-${id}.webp`));
+const uwagaGdy = (warunek) => (warunek ? `    ${GRAFIKA_UWAGA}\n` : "");
 
 await mkdir(join(OUT, "kategorie"), { recursive: true });
 const kategorieZeStrona = kategorie.filter((k) => zDanymi.filter((z) => z.kategoria === k.id).length >= MIN_STRONA);
@@ -324,20 +350,17 @@ for (const kat of kategorieZeStrona) {
   const sciezkaOkr = [["/", "Mapa"], ["/kategorie/", "Kategorie"], [null, kat.nazwa]];
   const nazwaMala = kat.nazwa.toLowerCase();
   const tresc = `${okruszki(...sciezkaOkr)}
-    <h1>GTA 6: ${esc(nazwaMala)} – mapa i lista (${pozycje.length})</h1>
-    <p>${esc(kat.opis || "")}</p>
+${jestObraz(`kat-${kat.id}.webp`) ? hero({ plik: `kat-${kat.id}.webp`, alt: `Mapa wyspy z pinezkami: ${nazwaMala}`, h1: `GTA 6: ${esc(nazwaMala)} – mapa i lista (${pozycje.length})`, lead: esc(kat.opis || "") }) : `    <h1>GTA 6: ${esc(nazwaMala)} – mapa i lista (${pozycje.length})</h1>\n    <p>${esc(kat.opis || "")}</p>`}
+${liczby([[pozycje.length, plKolacja(pozycje.length, "punkt", "punkty", "punktów")], [okolice.length, plKolacja(okolice.length, "okolica", "okolice", "okolic")], [wRegionach.length, plKolacja(wRegionach.length, "region", "regiony", "regionów")], [zOdp(pozycje), plKolacja(zOdp(pozycje), "odpowiednik", "odpowiedniki", "odpowiedników")]])}
     <p>Na mapie ViceMap jest ${punktow(pozycje.length)} z tej kategorii${okolice.length ? `, rozmieszczonych w ${okolice.length} ${plKolacja(okolice.length, "okolicy", "okolicach", "okolicach")}` : ""}. Najwięcej w okolicach: ${okolice.slice(0, 3).map(([n, c]) => `${esc(n)} (${c})`).join("; ")}.${wRegionach.length ? ` Wśród sześciu regionów Leonidy: ${wRegionach.map(([n, c]) => `${esc(n)} (${c})`).join(", ")}${poza ? `. Reszta (${poza}) leży w innych hrabstwach i dzielnicach, których nie przypisaliśmy do żadnego z tych regionów` : ""}.` : ""}${zOdp(pozycje) ? ` ${zOdp(pozycje) === pozycje.length ? `Dla wszystkich ${pozycje.length} punktów` : `Dla ${zOdp(pozycje)} z ${pozycje.length} punktów`} społeczność GTADB wskazała prawdziwy odpowiednik, np. ${esc(pozycje.find((z) => z.odpowiednik).odpowiednik)}.` : ""}</p>
 ${gtadb(pozycje) ? `    ${ostrzezenie}\n` : ""}    <h2>Jak korzystać z mapy</h2>
     <p>Przycisk poniżej otwiera mapę z włączoną wyłącznie tą kategorią. Kliknij pinezkę, żeby zobaczyć nazwę, okolicę i pewność danych, oznacz miejsce jako zaliczone albo dodaj je do ulubionych. Postęp i notatki zapisują się wyłącznie w Twojej przeglądarce. Błąd w danych możesz <a href="/zglos.html">zgłosić w formularzu</a>.</p>
     <p><a class="przycisk przycisk--glowny" href="${hashMapyKat(kat.id)}">Pokaż na mapie</a></p>
     <h2>Lista miejsc (${pozycje.length})</h2>
-${tabela(pozycje, ["nazwa", "okolica", "odpowiednik", "mapa"])}
-    <h2>Inne kategorie</h2>
-    <ul>
-${inneKat.map((k) => `      <li><a href="/kategorie/${k.id}.html">${esc(k.nazwa)}</a></li>`).join("\n")}
-      <li><a href="/kategorie/">Wszystkie kategorie</a></li>
-    </ul>
-    <p class="zrodla">Zobacz też <a href="/poradniki/">poradniki do GTA 6</a>, <a href="/poradniki/regiony.html">opis regionów Leonidy</a> i <a href="/o-projekcie.html">skąd mamy dane</a>.</p>`;
+${tabela(pozycje, ["nazwa", "okolica", "odpowiednik", "mapa"], kat.nazwa)}
+    <h2>Zobacz też</h2>
+${karty([...inneKat.map((k) => kartaKat(k, zDanymi.filter((z) => z.kategoria === k.id).length)), karta({ href: "/kategorie/", tytul: "Wszystkie kategorie" })])}
+${uwagaGdy(kartyZObrazem("kat", inneKat.map((k) => k.id)))}${zobaczTez()}`;
   const opisMeta = skroc(`${kat.nazwa} w GTA 6: ${punktow(pozycje.length)} z okolicą${zOdp(pozycje) ? " i prawdziwym odpowiednikiem" : ""} na mapie po polsku. Dane GTADB (CC BY 4.0), niepotwierdzone przed premierą.`, 155);
   await writeFile(join(OUT, sciezka), strona({
     sciezka, tytul: tytulDo60(`GTA 6: ${nazwaMala} – lista i mapa | ViceMap`, `GTA 6: ${nazwaMala} – lista i mapa`, `${kat.nazwa} w GTA 6`),
@@ -360,9 +383,8 @@ ${inneKat.map((k) => `      <li><a href="/kategorie/${k.id}.html">${esc(k.nazwa)
   const tresc = `${okruszki(...sciezkaOkr)}
     <h1>GTA 6: kategorie miejsc na mapie</h1>
     <p>ViceMap dzieli miejsca z Leonidy na kategorie. Poniżej lista z liczbą punktów według stanu na ${DZIS_PL}. Kategorie bez punktów (kryjówki, znajdźki i inne) uzupełnimy po premierze, gdy będzie można sprawdzić je w grze. Dane z GTADB są niepotwierdzone przed premierą 19.11.2026.</p>
-    <ul>
-${wiersze.map(({ k, n }) => `      <li>${n >= MIN_STRONA ? `<a href="/kategorie/${k.id}.html">${esc(k.nazwa)}</a>` : esc(k.nazwa)} – ${n ? punktow(n) : "jeszcze brak punktów"}${n && n < MIN_STRONA ? ` (<a href="${hashMapyKat(k.id)}">zobacz na mapie</a>)` : ""}</li>`).join("\n")}
-    </ul>
+${karty(wiersze.filter((e) => e.n).map(({ k, n }) => kartaKat(k, n)))}
+${uwagaGdy(kartyZObrazem("kat", wiersze.filter((e) => e.n).map((e) => e.k.id)))}${wiersze.some((e) => !e.n) ? `    <p>Jeszcze bez punktów: ${wiersze.filter((e) => !e.n).map((e) => esc(e.k.nazwa)).join(", ")}.</p>` : ""}
     <p><a class="przycisk przycisk--glowny" href="/">Otwórz mapę</a></p>
     <p class="zrodla">Zobacz też <a href="/poradniki/regiony.html">regiony Leonidy</a> i <a href="/o-projekcie.html">źródła danych</a>.</p>`;
   await writeFile(join(OUT, sciezka), strona({
@@ -390,7 +412,8 @@ for (const r of regiony || []) {
   const hash = `/#v=${r.x},${r.y},1`;
   const opisMeta = skroc(`${r.nazwa} – region w GTA 6. ${r.opis || "Region stanu Leonida."} ${pozycje.length ? `Mapa i lista miejsc: ${punktow(pozycje.length)}, po polsku.` : "Położenie na mapie ViceMap, po polsku."}`, 155);
   const tresc = `${okruszki(...sciezkaOkr)}
-    <h1>GTA 6: ${esc(r.nazwa)} – region na mapie${pozycje.length ? ` i lista miejsc (${pozycje.length})` : ""}</h1>
+${jestObraz(`baner-${r.id}.webp`) ? hero({ plik: `baner-${r.id}.webp`, alt: `Fragment mapy GTADB: okolice ${r.nazwa}`, h1: `GTA 6: ${esc(r.nazwa)} – region na mapie${pozycje.length ? ` i lista miejsc (${pozycje.length})` : ""}` }) : `    <h1>GTA 6: ${esc(r.nazwa)} – region na mapie${pozycje.length ? ` i lista miejsc (${pozycje.length})` : ""}</h1>`}
+${liczby([[pozycje.length, plKolacja(pozycje.length, "punkt", "punkty", "punktów")], [kategoriaLicz.length, plKolacja(kategoriaLicz.length, "kategoria", "kategorie", "kategorii")], [okolice.length, plKolacja(okolice.length, "okolica", "okolice", "okolic")], [zOdp(pozycje), plKolacja(zOdp(pozycje), "odpowiednik", "odpowiedniki", "odpowiedników")]])}
     <p class="stan">Stan na ${DZIS_PL}. Rockstar nie opublikował pełnej mapy, więc granice regionów poznamy dopiero po premierze 19.11.2026.</p>
     ${r.opis ? `<p>${esc(r.opis)} Rockstar zalicza ${esc(r.nazwa)} do sześciu regionów stanu Leonida (<a href="/poradniki/regiony.html">wszystkie regiony</a>).</p>` : ""}
     <p>Środek regionu na naszej mapie to punkt wyznaczony przez ViceMap, nie oficjalna granica. Źródło: ${esc(r.zrodlo || "dane ViceMap")}.</p>
@@ -398,12 +421,14 @@ ${pozycje.length ? `    <p>Do regionu przypisaliśmy ${punktow(pozycje.length)} 
 ${gtadb(pozycje) ? `    ${ostrzezenie}\n` : ""}` : `    <p>Na mapie nie ma jeszcze punktów przypisanych do tego regionu. Pojawią się po premierze, gdy sprawdzimy je w grze.</p>
 `}    <p><a class="przycisk przycisk--glowny" href="${hash}">Pokaż na mapie</a></p>
 ${pozycje.length ? `    <h2>Lista miejsc (${pozycje.length})</h2>
-${tabela(pozycje, ["nazwa", "kategoria", "okolica", "odpowiednik", "mapa"])}
+${tabela(pozycje, ["nazwa", "kategoria", "okolica", "odpowiednik", "mapa"], r.nazwa)}
 ` : ""}    <h2>Pozostałe regiony</h2>
-    <ul>
-${inneReg.map((x) => `      <li>${wRegionie(x).length >= MIN_STRONA ? `<a href="/regiony/${x.id}.html">${esc(x.nazwa)}</a>` : `<a href="/#v=${x.x},${x.y},1">${esc(x.nazwa)} (na mapie)</a>`}</li>`).join("\n")}
-    </ul>
-    <p class="zrodla">Zobacz też <a href="/kategorie/">kategorie miejsc</a>, <a href="/poradniki/regiony.html">poradnik po regionach</a> i <a href="/o-projekcie.html">źródła danych</a>.</p>`;
+${karty(inneReg.map((x) => kartaReg(x, wRegionie(x).length)))}
+${uwagaGdy(kartyZObrazem("baner", inneReg.map((x) => x.id)))}${karty([
+  karta({ href: "/kategorie/", tytul: "Kategorie miejsc" }),
+  karta({ href: "/poradniki/regiony.html", tytul: "Poradnik po regionach" }),
+  karta({ href: "/o-projekcie.html", tytul: "Źródła danych" })
+], true)}`;
   await writeFile(join(OUT, sciezka), strona({
     sciezka, tytul: tytulDo60(`GTA 6: ${r.nazwa} – region, mapa i lista | ViceMap`, `GTA 6: ${r.nazwa} – region i mapa`, `${r.nazwa} w GTA 6`),
     opis: opisMeta, tresc, typOg: "website", noindex: !indeks,
@@ -457,15 +482,10 @@ if (OUT === ROOT && existsSync(join(ROOT, "index.html"))) {
     <h2>Co to jest ViceMap</h2>
     <p>ViceMap to nieoficjalna, polskojęzyczna mapa GTA 6, zbudowana na otwartych danych społeczności GTADB (CC BY 4.0). Na mapie jest ${zDanymi.length} ${plKolacja(zDanymi.length, "miejsce", "miejsca", "miejsc")} z Leonidy, z okolicą i prawdziwym odpowiednikiem tam, gdzie społeczność go wskazała. Przed premierą 19.11.2026 położenie punktów jest niepotwierdzone: po premierze porównamy je z grą. <a href="/o-projekcie.html">Skąd mamy dane i jak oznaczamy pewność</a> · <a href="/dziennik-zmian.html">Dziennik zmian</a>.</p>
     <h2>Kategorie miejsc</h2>
-    <ul class="lista-poradnikow">
-${kategorie.filter((k) => !k.spoiler).map((k) => ({ k, n: zDanymi.filter((z) => z.kategoria === k.id).length })).filter((e) => e.n).map(({ k, n }) => `      <li>${n >= MIN_STRONA ? `<a href="/kategorie/${k.id}.html">${esc(k.nazwa)}</a>` : `<a href="${hashMapyKat(k.id)}">${esc(k.nazwa)}</a>`} – ${punktow(n)}</li>`).join("\n")}
-      <li><a href="/kategorie/">Wszystkie kategorie</a></li>
-    </ul>
+${karty([...kategorie.filter((k) => !k.spoiler).map((k) => ({ k, n: zDanymi.filter((z) => z.kategoria === k.id).length })).filter((e) => e.n).map(({ k, n }) => kartaKat(k, n)), karta({ href: "/kategorie/", tytul: "Wszystkie kategorie" })])}
     <h2>Regiony Leonidy</h2>
-    <ul class="lista-poradnikow">
-${(regiony || []).map((r) => `      <li>${wRegionie(r).length >= MIN_STRONA ? `<a href="/regiony/${r.id}.html">${esc(r.nazwa)}</a> – ${punktow(wRegionie(r).length)}` : `<a href="/#v=${r.x},${r.y},1">${esc(r.nazwa)}</a> – pokaż na mapie`}</li>`).join("\n")}
-      <li><a href="/poradniki/regiony.html">Opis wszystkich regionów</a></li>
-    </ul>
+${karty([...(regiony || []).map((r) => kartaReg(r, wRegionie(r).length)), karta({ href: "/poradniki/regiony.html", tytul: "Opis wszystkich regionów" })])}
+${uwagaGdy(kartyZObrazem("baner", (regiony || []).map((r) => r.id)) || kartyZObrazem("kat", kategorie.map((k) => k.id)))}
     <h2>Najnowsze poradniki</h2>
     <ul class="lista-poradnikow">
 ${poradniki.map(([slug, t]) => `      <li><a href="/poradniki/${slug}.html">${esc(t)}</a></li>`).join("\n")}
