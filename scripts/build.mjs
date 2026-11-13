@@ -65,6 +65,9 @@ znaczniki.forEach((z, i) => {
   if (z.odpowiednik !== undefined && (typeof z.odpowiednik !== "string" || !z.odpowiednik.trim() || z.odpowiednik.length > ODP_MAX)) {
     bledy.push(`${gdzie}: "odpowiednik" musi być niepustym tekstem do ${ODP_MAX} znaków (prawdziwe miejsce, np. "Ocean Drive, Miami"). Usuń pole, jeśli nie znasz odpowiednika.`);
   }
+  if (z.odpowiednikGps !== undefined && !(Array.isArray(z.odpowiednikGps) && z.odpowiednikGps.length === 2 && z.odpowiednikGps.every(Number.isFinite) && Math.abs(z.odpowiednikGps[0]) <= 90 && Math.abs(z.odpowiednikGps[1]) <= 180)) {
+    bledy.push(`${gdzie}: "odpowiednikGps" musi być parą liczb [szerokość -90..90, długość -180..180], np. [25.78, -80.13].`);
+  }
   if (z.zrodlo !== undefined && !ZRODLA.includes(z.zrodlo)) bledy.push(`${gdzie}: nieznane "zrodlo" (${JSON.stringify(z.zrodlo)}). Dozwolone: ${ZRODLA.join(", ")}.`);
   if (z.region !== undefined && typeof z.region !== "string") bledy.push(`${gdzie}: "region" musi być tekstem, np. "Vice City".`);
   if (z.przyklad) ostrzezenia.push(`${gdzie}: znacznik przykładowy ("przyklad": true) – nie dostanie strony ani wpisu w sitemap. Po premierze usuń go albo zamień na prawdziwy.`);
@@ -245,7 +248,7 @@ for (const z of publiczne) {
       ${z.opis ? `<p>${esc(z.opis)}</p>` : ""}
 ${z.zrodlo === "gtadb" || z.odpowiednik ? `      <ul class="fakty">
 ${z.zrodlo === "gtadb" ? `        <li>Pewność: zidentyfikowane przez społeczność GTADB, niepotwierdzone przed premierą.</li>
-` : ""}${z.odpowiednik ? `        <li>Prawdziwy odpowiednik: ${esc(z.odpowiednik)}</li>
+` : ""}${z.odpowiednik ? `        <li>Prawdziwy odpowiednik: ${esc(z.odpowiednik)}${z.odpowiednikGps ? ` (<a href="https://www.openstreetmap.org/?mlat=${z.odpowiednikGps[0]}&amp;mlon=${z.odpowiednikGps[1]}#map=17/${z.odpowiednikGps[0]}/${z.odpowiednikGps[1]}" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>)` : ""}</li>
 ` : ""}      </ul>` : ""}
       <div id="mini-mapa" class="mini-mapa" role="img" aria-label="Mini mapa: ${esc(z.nazwa)}" data-x="${z.x}" data-y="${z.y}" data-kolor="${esc(kat.kolor)}" data-znak="${esc(kat.znak)}"></div>
       <p><a class="przycisk przycisk--glowny" href="/#z=${encodeURIComponent(z.id)}">Pokaż na pełnej mapie</a>

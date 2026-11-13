@@ -146,6 +146,12 @@
     }
     if (typeof z.odpowiednik === "string" && z.odpowiednik.trim())
       wiersze.push(el("p", null, el("strong", { textContent: "Prawdziwy odpowiednik: " }), z.odpowiednik.trim()));
+    const g = z.odpowiednikGps;
+    if (Array.isArray(g) && g.length === 2 && Math.abs(g[0]) <= 90 && Math.abs(g[1]) <= 180) // zwykły link, nic nie ładujemy z OSM
+      wiersze.push(el("p", null, el("a", {
+        href: "https://www.openstreetmap.org/?mlat=" + g[0] + "&mlon=" + g[1] + "#map=17/" + g[0] + "/" + g[1],
+        target: "_blank", rel: "noopener noreferrer", textContent: "Zobacz prawdziwe miejsce (OpenStreetMap)"
+      })));
     return wiersze.length ? el("div", { className: "popup__dowod" }, ...wiersze) : null;
   }
 
