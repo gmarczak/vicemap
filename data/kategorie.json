@@ -1,7 +1,9 @@
 [
   {"id": "orientacyjne", "nazwa": "Punkty orientacyjne", "liczbaPojedyncza": "punkt orientacyjny", "kolor": "#26c6da", "znak": "O", "opis": "Znaki, budowle i rzeźby widoczne w trailerach, rozpoznane przez społeczność GTADB (dane na licencji CC BY 4.0). Niepotwierdzone przed premierą.", "bezStron": true},
   {"id": "kryjowki", "nazwa": "Kryjówki", "liczbaPojedyncza": "kryjówka", "kolor": "#ff5fa2", "znak": "K", "opis": "Kryjówki i mieszkania, w których zapiszesz grę i zmienisz ubranie."},
-  {"id": "sklepy", "nazwa": "Sklepy", "liczbaPojedyncza": "sklep", "kolor": "#4fc3f7", "znak": "S", "opis": "Sklepy spożywcze, odzieżowe, fryzjerzy i inne miejsca zakupów."},
+  {"id": "sklepy", "nazwa": "Sklepy", "liczbaPojedyncza": "sklep", "kolor": "#4fc3f7", "znak": "S", "opis": "Sklepy, restauracje, stacje benzynowe i inne lokale rozpoznane w trailerach przez społeczność GTADB (dane na licencji CC BY 4.0). Niepotwierdzone przed premierą.", "bezStron": true},
+  {"id": "hotele", "nazwa": "Hotele i motele", "liczbaPojedyncza": "hotel", "kolor": "#e040fb", "znak": "H", "opis": "Hotele i motele rozpoznane w trailerach przez społeczność GTADB (dane na licencji CC BY 4.0). Niepotwierdzone przed premierą.", "bezStron": true},
+  {"id": "transport", "nazwa": "Transport", "liczbaPojedyncza": "obiekt transportowy", "kolor": "#448aff", "znak": "T", "opis": "Lotniska, stacje kolejowe i metra, przystanie jachtowe oraz nazwane mosty i tunele rozpoznane w trailerach przez społeczność GTADB (dane na licencji CC BY 4.0). Niepotwierdzone przed premierą.", "bezStron": true},
   {"id": "bron", "nazwa": "Broń", "liczbaPojedyncza": "sklep z bronią", "kolor": "#ff8a3d", "znak": "B", "opis": "Sklepy z bronią i miejsca, gdzie można ją zdobyć."},
   {"id": "pojazdy", "nazwa": "Pojazdy", "liczbaPojedyncza": "pojazd", "kolor": "#ffd54f", "znak": "P", "opis": "Rzadkie samochody, łodzie i inne pojazdy warte zdobycia."},
   {"id": "znajdzki", "nazwa": "Znajdźki", "liczbaPojedyncza": "znajdźka", "kolor": "#9ccc65", "znak": "Z", "opis": "Przedmioty do zebrania, potrzebne do ukończenia gry w 100%."},
