@@ -1,4 +1,4 @@
-"""Pobiera kafelki mapy GTADB (CC BY 4.0, zestaw yanis,17, poziomy 0-4) do tiles/yanis-17/{z}/{x}_{y}.jpg.
+"""Pobiera kafelki mapy GTADB (CC BY 4.0, zestaw yanis,17, poziomy 0-5) do tiles/yanis-17/{z}/{x}_{y}.jpg.
 
 Użycie:  python -I scripts/pobierz-kafelki.py [--odswiez]
 Wymaga Pillow (pip install pillow). Tylko obszar mapy: x od 0 do 3760 px obrazu z=3 (5376x5120 px, kafelki x=5..25, y=5..24).
@@ -15,7 +15,7 @@ from PIL import Image
 BAZA = "https://raw.githubusercontent.com/rolux/gtadb.org/main/maps/tiles/6/yanis%2C17/{z}/{z}%2C{y}%2C{x}.jpg"
 CEL = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tiles", "yanis-17")
 # zakresy indeksów źródła (x, y) włącznie
-ZAKRES = {0: ((0, 0), (3, 3)), 1: ((1, 1), (6, 6)), 2: ((2, 2), (12, 12)), 3: ((5, 5), (25, 24)), 4: ((10, 10), (51, 49))}
+ZAKRES = {0: ((0, 0), (3, 3)), 1: ((1, 1), (6, 6)), 2: ((2, 2), (12, 12)), 3: ((5, 5), (25, 24)), 4: ((10, 10), (51, 49)), 5: ((21, 21), (103, 99))}
 GRANICA_Z3 = 5040  # bezwzględny piksel x (z=3), na prawo od niego jest panel: 1280 + 3760
 Y_Z3 = (1280, 1280 + 5120)  # bezwzględne piksele y obszaru mapy (z=3)
 

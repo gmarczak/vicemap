@@ -86,7 +86,7 @@
   // Warstwa rysuje każdy kafelek Leafleta na własnym <canvas> z 1-4 kafelków źródłowych; nic poza widocznymi się nie pobiera.
   const PX3 = 3760 / 3200;
   const KAFELKI = "/tiles/yanis-17/";
-  const zakresKafelkow = (zs) => { // indeksy istniejących plików na poziomie źródłowym zs (0-4)
+  const zakresKafelkow = (zs) => { // indeksy istniejących plików na poziomie źródłowym zs (0-5)
     const s = Math.pow(2, zs - 3);
     return { x0: Math.floor(1280 * s / 256), x1: Math.floor((5040 * s - 1) / 256), y0: Math.floor(1280 * s / 256), y1: Math.floor((6400 * s - 1) / 256) };
   };
@@ -105,15 +105,15 @@
     return obrazyKafelkow.get(url);
   }
   const WarstwaKafelkow = L.GridLayer.extend({
-    options: { tileSize: 256, bounds: L.latLngBounds(granice), minZoom: -6, maxNativeZoom: 2, keepBuffer: 1, updateWhenZooming: false, pane: "tilePane", attribution: "" },
+    options: { tileSize: 256, bounds: L.latLngBounds(granice), minZoom: -6, maxNativeZoom: 3, keepBuffer: 1, updateWhenZooming: false, pane: "tilePane", attribution: "" },
     createTile(coords, gotowe) {
       const dpr = Math.min(window.devicePixelRatio || 1, 2), bok = this.options.tileSize;
       const plotno = document.createElement("canvas");
       plotno.width = plotno.height = Math.round(bok * dpr);
       const sc = Math.pow(2, coords.z);                         // piksele ekranu na jednostkę mapy na tym zoomie
-      const zs = Math.max(0, Math.min(4, Math.ceil(Math.log2(sc * dpr / PX3) + 3 - 1e-9))); // najmniejszy poziom źródłowy nie gorszy niż ekran
+      const zs = Math.max(0, Math.min(5, Math.ceil(Math.log2(sc * dpr / PX3) + 3 - 1e-9))); // najmniejszy poziom źródłowy nie gorszy niż ekran
       const sp = PX3 * Math.pow(2, zs - 3);                     // piksele źródła na jednostkę
-      const skala = sc * dpr / sp;                              // piksele płótna na piksel źródła (<= 1, poza zoomem > 4)
+      const skala = sc * dpr / sp;                              // piksele płótna na piksel źródła (<= 1, poza zoomem > 5)
       const baza = 1280 * Math.pow(2, zs - 3);
       const lewo = baza + (coords.x * bok / sc) * sp;           // bezwzględny piksel źródła przy lewej krawędzi płótna
       const gora = baza + (MAPA.wysokosc + coords.y * bok / sc) * sp; // y płótna rośnie w dół, y mapy od dołu: y_mapy = -coords.y*bok/sc
