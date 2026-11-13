@@ -12,6 +12,7 @@ const DANE = process.env.VICEMAP_DANE ? resolve(process.env.VICEMAP_DANE) : join
 const OUT = process.env.VICEMAP_WYJSCIE ? resolve(process.env.VICEMAP_WYJSCIE) : ROOT;
 const DOMENA = "https://vicemap.pl";
 const DZIS = new Date().toISOString().slice(0, 10);
+const DZIS_PL = DZIS.split("-").reverse().join(".");
 
 async function wczytaj(nazwa) {
   try {
@@ -325,9 +326,9 @@ for (const kat of kategorieZeStrona) {
   const tresc = `${okruszki(...sciezkaOkr)}
     <h1>GTA 6: ${esc(nazwaMala)} – mapa i lista (${pozycje.length})</h1>
     <p>${esc(kat.opis || "")}</p>
-    <p>Na mapie ViceMap jest ${punktow(pozycje.length)} z tej kategorii${okolice.length ? `, rozmieszczonych w ${okolice.length} ${plKolacja(okolice.length, "okolicy", "okolicach", "okolicach")}` : ""}. Najwięcej: ${okolice.slice(0, 3).map(([n, c]) => `${esc(n)} (${c})`).join(", ")}.${wRegionach.length ? ` Wśród sześciu regionów Leonidy: ${wRegionach.map(([n, c]) => `${esc(n)} (${c})`).join(", ")}${poza ? `; pozostałe ${poza} leży w innych hrabstwach i dzielnicach, których nie przypisaliśmy do tych regionów` : ""}.` : ""}${zOdp(pozycje) ? ` Dla ${zOdp(pozycje)} z ${pozycje.length} punktów społeczność GTADB wskazała prawdziwy odpowiednik, np. ${esc(pozycje.find((z) => z.odpowiednik).odpowiednik)}.` : ""}</p>
+    <p>Na mapie ViceMap jest ${punktow(pozycje.length)} z tej kategorii${okolice.length ? `, rozmieszczonych w ${okolice.length} ${plKolacja(okolice.length, "okolicy", "okolicach", "okolicach")}` : ""}. Najwięcej w okolicach: ${okolice.slice(0, 3).map(([n, c]) => `${esc(n)} (${c})`).join("; ")}.${wRegionach.length ? ` Wśród sześciu regionów Leonidy: ${wRegionach.map(([n, c]) => `${esc(n)} (${c})`).join(", ")}${poza ? `. Reszta (${poza}) leży w innych hrabstwach i dzielnicach, których nie przypisaliśmy do żadnego z tych regionów` : ""}.` : ""}${zOdp(pozycje) ? ` ${zOdp(pozycje) === pozycje.length ? `Dla wszystkich ${pozycje.length} punktów` : `Dla ${zOdp(pozycje)} z ${pozycje.length} punktów`} społeczność GTADB wskazała prawdziwy odpowiednik, np. ${esc(pozycje.find((z) => z.odpowiednik).odpowiednik)}.` : ""}</p>
 ${gtadb(pozycje) ? `    ${ostrzezenie}\n` : ""}    <h2>Jak korzystać z mapy</h2>
-    <p>Przycisk poniżej otwiera mapę z włączoną tylko tą kategorią. Kliknij pinezkę, żeby zobaczyć nazwę, okolicę i pewność danych, oznacz miejsce jako zaliczone albo dodaj je do ulubionych. Postęp i notatki zapisują się wyłącznie w Twojej przeglądarce. Błąd w danych możesz <a href="/zglos.html">zgłosić tutaj</a>.</p>
+    <p>Przycisk poniżej otwiera mapę z włączoną wyłącznie tą kategorią. Kliknij pinezkę, żeby zobaczyć nazwę, okolicę i pewność danych, oznacz miejsce jako zaliczone albo dodaj je do ulubionych. Postęp i notatki zapisują się wyłącznie w Twojej przeglądarce. Błąd w danych możesz <a href="/zglos.html">zgłosić w formularzu</a>.</p>
     <p><a class="przycisk przycisk--glowny" href="${hashMapyKat(kat.id)}">Pokaż na mapie</a></p>
     <h2>Lista miejsc (${pozycje.length})</h2>
 ${tabela(pozycje, ["nazwa", "okolica", "odpowiednik", "mapa"])}
@@ -337,7 +338,7 @@ ${inneKat.map((k) => `      <li><a href="/kategorie/${k.id}.html">${esc(k.nazwa)
       <li><a href="/kategorie/">Wszystkie kategorie</a></li>
     </ul>
     <p class="zrodla">Zobacz też <a href="/poradniki/">poradniki do GTA 6</a>, <a href="/poradniki/regiony.html">opis regionów Leonidy</a> i <a href="/o-projekcie.html">skąd mamy dane</a>.</p>`;
-  const opisMeta = skroc(`${kat.nazwa} w GTA 6: ${punktow(pozycje.length)} na interaktywnej mapie po polsku, z okolicą i prawdziwym odpowiednikiem. Dane społeczności GTADB, niepotwierdzone przed premierą.`, 155);
+  const opisMeta = skroc(`${kat.nazwa} w GTA 6: ${punktow(pozycje.length)} z okolicą${zOdp(pozycje) ? " i prawdziwym odpowiednikiem" : ""} na mapie po polsku. Dane GTADB (CC BY 4.0), niepotwierdzone przed premierą.`, 155);
   await writeFile(join(OUT, sciezka), strona({
     sciezka, tytul: tytulDo60(`GTA 6: ${nazwaMala} – lista i mapa | ViceMap`, `GTA 6: ${nazwaMala} – lista i mapa`, `${kat.nazwa} w GTA 6`),
     opis: opisMeta, tresc, typOg: "website",
@@ -358,7 +359,7 @@ ${inneKat.map((k) => `      <li><a href="/kategorie/${k.id}.html">${esc(k.nazwa)
   const wiersze = kategorie.map((k) => ({ k, n: zDanymi.filter((z) => z.kategoria === k.id).length })).filter((e) => !e.k.spoiler);
   const tresc = `${okruszki(...sciezkaOkr)}
     <h1>GTA 6: kategorie miejsc na mapie</h1>
-    <p>ViceMap dzieli miejsca z Leonidy na kategorie. Poniżej lista z liczbą punktów na dzień budowy strony (${DZIS}). Kategorie bez punktów (kryjówki, znajdźki i inne) zapełnimy po premierze, gdy będzie można sprawdzić je w grze. Dane z GTADB są niepotwierdzone przed premierą 19.11.2026.</p>
+    <p>ViceMap dzieli miejsca z Leonidy na kategorie. Poniżej lista z liczbą punktów według stanu na ${DZIS_PL}. Kategorie bez punktów (kryjówki, znajdźki i inne) uzupełnimy po premierze, gdy będzie można sprawdzić je w grze. Dane z GTADB są niepotwierdzone przed premierą 19.11.2026.</p>
     <ul>
 ${wiersze.map(({ k, n }) => `      <li>${n >= MIN_STRONA ? `<a href="/kategorie/${k.id}.html">${esc(k.nazwa)}</a>` : esc(k.nazwa)} – ${n ? punktow(n) : "jeszcze brak punktów"}${n && n < MIN_STRONA ? ` (<a href="${hashMapyKat(k.id)}">zobacz na mapie</a>)` : ""}</li>`).join("\n")}
     </ul>
@@ -387,14 +388,14 @@ for (const r of regiony || []) {
   const okolice = liczPo(pozycje, (z) => z.region);
   const inneReg = (regiony || []).filter((x) => x.id !== r.id);
   const hash = `/#v=${r.x},${r.y},1`;
-  const opisMeta = skroc(`${r.nazwa} w GTA 6: ${r.opis || "region stanu Leonida"} ${pozycje.length ? `Lista ${punktow(pozycje.length)} na mapie po polsku.` : "Położenie na mapie po polsku."}`, 155);
+  const opisMeta = skroc(`${r.nazwa} – region w GTA 6. ${r.opis || "Region stanu Leonida."} ${pozycje.length ? `Mapa i lista miejsc: ${punktow(pozycje.length)}, po polsku.` : "Położenie na mapie ViceMap, po polsku."}`, 155);
   const tresc = `${okruszki(...sciezkaOkr)}
     <h1>GTA 6: ${esc(r.nazwa)} – region na mapie${pozycje.length ? ` i lista miejsc (${pozycje.length})` : ""}</h1>
-    <p class="stan">Stan na ${DZIS}. Rockstar nie opublikował pełnej mapy, więc granice regionów poznamy dopiero po premierze 19.11.2026.</p>
-    ${r.opis ? `<p>${esc(r.opis)} Rockstar wymienia ${esc(r.nazwa)} wśród sześciu regionów stanu Leonida (<a href="/poradniki/regiony.html">wszystkie regiony</a>).</p>` : ""}
-    <p>Środek regionu na naszej mapie to punkt wyliczony przez ViceMap, a nie oficjalna granica. Źródło: ${esc(r.zrodlo || "dane ViceMap")}.</p>
-${pozycje.length ? `    <p>Do regionu przypisaliśmy ${punktow(pozycje.length)} z mapy, rozmieszczonych w ${okolice.length} ${plKolacja(okolice.length, "okolicy", "okolicach", "okolicach")} (najwięcej: ${okolice.slice(0, 3).map(([n, c]) => `${esc(n)}, ${c}`).join("; ")}). Według kategorii: ${kategoriaLicz.map(([n, c]) => `${esc(n)} (${c})`).join(", ")}. Przypisanie wynika z nazwy okolicy z gry podanej przez GTADB (${esc((r.dopasuj || []).join(", "))}), więc punkty z sąsiednich dzielnic mogą nie wchodzić do tej listy.</p>
-${gtadb(pozycje) ? `    ${ostrzezenie}\n` : ""}` : `    <p>Na mapie nie mamy jeszcze punktów przypisanych do tego regionu. Pojawią się po premierze, gdy sprawdzimy je w grze.</p>
+    <p class="stan">Stan na ${DZIS_PL}. Rockstar nie opublikował pełnej mapy, więc granice regionów poznamy dopiero po premierze 19.11.2026.</p>
+    ${r.opis ? `<p>${esc(r.opis)} Rockstar zalicza ${esc(r.nazwa)} do sześciu regionów stanu Leonida (<a href="/poradniki/regiony.html">wszystkie regiony</a>).</p>` : ""}
+    <p>Środek regionu na naszej mapie to punkt wyznaczony przez ViceMap, nie oficjalna granica. Źródło: ${esc(r.zrodlo || "dane ViceMap")}.</p>
+${pozycje.length ? `    <p>Do regionu przypisaliśmy ${punktow(pozycje.length)} z mapy, rozmieszczonych w ${okolice.length} ${plKolacja(okolice.length, "okolicy", "okolicach", "okolicach")} (najwięcej: ${okolice.slice(0, 3).map(([n, c]) => `${esc(n)} (${c})`).join("; ")}). Według kategorii: ${kategoriaLicz.map(([n, c]) => `${esc(n)} (${c})`).join(", ")}. Punkty przypisujemy do regionu po nazwie okolicy z gry, którą podaje GTADB (${esc((r.dopasuj || []).join(", "))}), dlatego punkty z sąsiednich dzielnic mogą nie trafić na tę listę.</p>
+${gtadb(pozycje) ? `    ${ostrzezenie}\n` : ""}` : `    <p>Na mapie nie ma jeszcze punktów przypisanych do tego regionu. Pojawią się po premierze, gdy sprawdzimy je w grze.</p>
 `}    <p><a class="przycisk przycisk--glowny" href="${hash}">Pokaż na mapie</a></p>
 ${pozycje.length ? `    <h2>Lista miejsc (${pozycje.length})</h2>
 ${tabela(pozycje, ["nazwa", "kategoria", "okolica", "odpowiednik", "mapa"])}
@@ -421,7 +422,7 @@ let dziennikAdres = null;
 if (Array.isArray(zmiany) && zmiany.length) {
   dziennikAdres = "dziennik-zmian.html";
   const sciezkaOkr = [["/", "Mapa"], [null, "Dziennik zmian"]];
-  const opisMeta = "Dziennik zmian ViceMap: co dodaliśmy do mapy GTA 6 i poradników, od najnowszych zmian. Nieoficjalna strona fanowska.";
+  const opisMeta = "Dziennik zmian ViceMap: co dodaliśmy do mapy GTA 6 i poradników, od najnowszych wpisów. Nieoficjalna strona fanowska, dane społeczności GTADB.";
   const tresc = `${okruszki(...sciezkaOkr)}
     <h1>Dziennik zmian ViceMap</h1>
     <p>Co zmieniło się na mapie i w poradnikach, od najnowszych wpisów. Ostatnia zmiana: ${esc(zmiany[0].data)}. Skąd mamy dane, opisujemy w <a href="/o-projekcie.html">O projekcie i źródłach danych</a>.</p>
