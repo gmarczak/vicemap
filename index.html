@@ -54,6 +54,11 @@
         <div class="postep__pasek"><span></span></div>
       </div>
 
+      <section id="sekcja-regiony" hidden>
+        <h2 class="panel__tytul">Regiony</h2>
+        <ul id="regiony" class="chipy" aria-label="Skocz do regionu"></ul>
+      </section>
+
       <h2 class="panel__tytul">Kategorie</h2>
       <ul id="filtry" class="filtry" aria-label="Kategorie znaczników"></ul>
       <div class="panel__przyciski">
@@ -61,7 +66,10 @@
         <button type="button" id="ukryj-wszystkie" class="przycisk przycisk--maly">Ukryj wszystkie</button>
       </div>
       <label class="przelacznik"><input type="checkbox" id="ukryj-zaliczone"> Ukryj zaliczone</label>
-      <p class="panel__uwaga">Postęp zapisuje się w tej przeglądarce. Kategoria „Misje fabularne” jest domyślnie ukryta, żeby nie zdradzać fabuły.</p>
+      <label class="przelacznik"><input type="checkbox" id="tylko-ulubione"> Tylko ulubione</label>
+      <h2 class="panel__tytul">Ulubione<span id="ulubione-licznik"></span></h2>
+      <ul id="ulubione" class="lista-panelu" aria-label="Twoje ulubione znaczniki"></ul>
+      <p class="panel__uwaga">Postęp, ulubione i notatki zapisują się w tej przeglądarce (są prywatne). Kategoria „Misje fabularne” jest domyślnie ukryta, żeby nie zdradzać fabuły.</p>
       <div class="panel__przyciski">
         <button type="button" id="kopiuj-widok" class="przycisk przycisk--maly">Kopiuj link do widoku</button>
         <button type="button" id="pobierz-postep" class="przycisk przycisk--maly">Pobierz postęp</button>
@@ -83,6 +91,7 @@
 
     <div class="mapa-kontener">
       <div id="map" role="application" aria-label="Interaktywna mapa GTA 6"></div>
+      <p id="ogloszenia" class="ukryta-etykieta" role="status" aria-live="polite"></p>
       <button type="button" id="przelacz-panel" class="przycisk przycisk--glowny przelacz-panel" aria-controls="panel" aria-expanded="false">Filtry i szukaj</button>
     </div>
   </div>

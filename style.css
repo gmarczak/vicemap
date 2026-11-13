@@ -138,6 +138,16 @@ textarea { min-height: 120px; resize: vertical; }
 .filtr--puste .filtr__dopisek { display: block; }
 .filtr--puste .pin { opacity: .45; }
 
+.chipy, .lista-panelu { list-style: none; margin: 0; padding: 0; }
+.chipy { display: flex; flex-wrap: wrap; gap: 6px; }
+.lista-panelu { max-height: 220px; overflow-y: auto; }
+.pozycja-panelu {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 4px;
+  font: inherit; color: var(--tekst); text-align: left; background: none; border: 0; border-radius: 8px; cursor: pointer;
+}
+.pozycja-panelu:hover { background: var(--panel-2); }
+.pozycja-panelu__nazwa { min-width: 0; overflow-wrap: anywhere; }
+
 .przelacz-panel { display: none; }
 .panel__uchwyt { display: none; }
 
@@ -167,7 +177,6 @@ kbd {
   color: #fff; border-color: #0b0a12; opacity: .8;
   box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .45), 0 1px 3px rgba(0, 0, 0, .6);
 }
-.pin-wrap { display: block; }
 
 /* Klastry: liczba znaczników w kółku w kolorach strony, cel dotykowy min. 44px */
 .klaster-ikona { background: none; border: 0; }
@@ -179,15 +188,15 @@ kbd {
 }
 .klaster-ikona:hover .klaster { border-color: var(--akcent-2); }
 
-/* Nazwy regionów: dekoracja, bez kliknięć, chowane przy dużym przybliżeniu */
-.leaflet-etykiety-pane { z-index: 450; pointer-events: none; }
-.etykiety--ukryte { display: none; }
-.etykieta-regionu { pointer-events: none; }
-.etykieta-regionu span {
-  position: absolute; transform: translate(-50%, -50%); white-space: nowrap;
-  font: 800 13px/1 system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #fff;
-  text-shadow: 0 0 2px #0b0a12, 0 0 4px #0b0a12, 0 0 8px #0b0a12, 0 1px 2px #000;
+/* Znaczki na pinezce: ★ ulubione, ✎ notatka */
+.pin-wrap { position: relative; width: 44px; height: 44px; }
+.pin__znak {
+  position: absolute; right: 2px; display: flex; align-items: center; justify-content: center;
+  width: 17px; height: 17px; border-radius: 50%; font: 700 11px/1 system-ui, sans-serif; color: #12101c;
+  border: 1.5px solid #12101c; box-shadow: 0 0 0 1px rgba(255, 255, 255, .85);
 }
+.pin__znak--ulubione { top: 2px; background: #ffd54f; }
+.pin__znak--notatka { bottom: 2px; background: var(--akcent-2); }
 
 /* --- Dymki Leafleta w ciemnym motywie --- */
 .leaflet-container { font: inherit; background: #0b0a12; }
@@ -214,6 +223,20 @@ kbd {
 .popup__zaliczone input:checked { background: #2e7d5b; border-color: #69f0ae; }
 .popup__zaliczone input:checked::before { transform: translateX(18px); background: #fff; }
 .popup__akcje { display: flex; flex-wrap: wrap; gap: 6px; }
+.popup__dowod { margin: 8px 0; padding: 6px 10px; font-size: .8rem; color: var(--tekst-2); background: var(--tlo); border-left: 3px solid var(--akcent-2); border-radius: 6px; }
+.popup__dowod p { margin: 2px 0; }
+.popup__dowod strong { color: var(--tekst); }
+.popup__gwiazdka { margin: 0 0 6px; }
+.popup__gwiazdka[aria-pressed="true"] { border-color: #ffd54f; color: #ffd54f; }
+.popup__notatki { margin: 0 0 8px; }
+.popup__notatki summary { display: flex; align-items: center; min-height: 44px; font-weight: 600; cursor: pointer; }
+.popup__notatki summary { list-style: none; }
+.popup__notatki summary::-webkit-details-marker { display: none; }
+.popup__notatki summary::before { content: "▸"; margin-right: 6px; color: var(--tekst-2); }
+.popup__notatki[open] summary::before { content: "▾"; }
+.popup__znak-notatki { margin-left: 6px; font-weight: 400; font-size: .8rem; color: var(--akcent-2); }
+.popup__notatki textarea { min-height: 80px; font-size: 16px; /* 16px: iOS nie przybliża strony przy fokusie */ }
+.popup__licznik-notatki { min-height: 1.4em; font-size: .8rem; color: #69f0ae; }
 .popup code { display: block; margin: 6px 0; padding: 6px; font-size: .75rem; background: var(--tlo); border-radius: 6px; word-break: break-all; }
 .tryb-edytora #map { cursor: crosshair; }
 
@@ -276,7 +299,11 @@ kbd {
 .leaflet-bar a { width: 44px; height: 44px; line-height: 44px; }
 .leaflet-touch .leaflet-bar a { width: 44px; height: 44px; line-height: 44px; }
 .leaflet-container a.leaflet-popup-close-button { width: 44px; height: 44px; font-size: 24px; line-height: 44px; text-align: center; padding: 0; }
-.leaflet-popup-content { max-width: calc(100vw - 96px); overflow-wrap: anywhere; }
+.leaflet-popup-content {
+  max-width: calc(100vw - 96px); overflow-wrap: anywhere;
+  max-height: min(70vh, 520px); overflow-y: auto; overscroll-behavior: contain; /* długa treść przewija się w dymku */
+}
+@media (max-width: 760px) { .leaflet-popup-content { max-height: 60vh; } }
 .przycisk--maly { min-height: 44px; padding: 6px 14px; }
 .przycisk { min-height: 44px; }
 .link-przycisk { min-height: 44px; padding: 0 4px; }

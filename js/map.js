@@ -1,4 +1,4 @@
-// Interaktywna mapa ViceMap: filtry, wyszukiwarka, tracker postępu, linki do znaczników.
+// Interaktywna mapa ViceMap: filtry, wyszukiwarka, tracker postępu, ulubione, notatki, linki do znaczników.
 (function () {
   "use strict";
 
@@ -6,7 +6,8 @@
   const MAPA = CFG.mapa || { obraz: "/mapa.webp", szerokosc: 3200, wysokosc: 4357 };
   const TRYB_EDYTORA = new URLSearchParams(location.search).has("edytor");
   const MAKS_WYNIKOW = 12;
-  const ZOOM_UKRYCIA_ETYKIET = 0.5; // przy większym przybliżeniu nazwy regionów tylko by zasłaniały
+  const MAKS_NOTATKI = 500;
+  const ZOOM_REGIONU = 0; // skok do regionu: całość regionu mieści się na ekranie
   const bezAnimacji = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // --- Pamięć przeglądarki (może być wyłączona, więc zawsze w try/catch) ---
@@ -18,7 +19,7 @@
       } catch (e) { return domyslnie; }
     },
     zapisz(klucz, wartosc) {
-      try { localStorage.setItem("vicemap." + klucz, JSON.stringify(wartosc)); } catch (e) { /* brak pamięci */ }
+      try { localStorage.setItem("vicemap." + klucz, JSON.stringify(wartosc)); return true; } catch (e) { return false; /* brak pamięci */ }
     }
   };
 
@@ -32,9 +33,26 @@
   const odmiana = (n, jeden, kilka, wiele) =>
     n === 1 ? jeden : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? kilka : wiele);
 
+  // Zapis z przeglądarki bywa uszkodzony ręcznie: bierzemy tylko to, co ma poprawny typ.
+  const czytajListeId = (klucz) => {
+    const v = pamiec.czytaj(klucz, []);
+    return Array.isArray(v) ? v.filter((id) => typeof id === "string") : [];
+  };
+  const czytajNotatki = () => {
+    const v = pamiec.czytaj("notatki", {});
+    const wynik = {};
+    if (v && typeof v === "object" && !Array.isArray(v))
+      for (const [id, t] of Object.entries(v)) if (typeof t === "string" && t.trim()) wynik[id] = t.trim().slice(0, MAKS_NOTATKI);
+    return wynik;
+  };
+  const maNotatke = (id) => Object.prototype.hasOwnProperty.call(notatki, id);
+
   // --- Stan ---
-  const zaliczone = new Set(pamiec.czytaj("zaliczone", []));
+  const zaliczone = new Set(czytajListeId("zaliczone"));
+  const ulubione = new Set(czytajListeId("ulubione"));
+  const notatki = czytajNotatki(); // id -> tekst (prywatne, tylko w tej przeglądarce)
   let ukryjZaliczone = pamiec.czytaj("ukryjZaliczone", false);
+  let tylkoUlubione = pamiec.czytaj("tylkoUlubione", false) === true;
   let widoczneKategorie = null; // ustawiane po wczytaniu kategorii
   const znacznikiPoId = new Map(); // id -> { dane, marker, szukaj }
   const naMapie = new Set();       // id znaczników dodanych do grupy klastrów
@@ -85,39 +103,87 @@
     }
   }).addTo(map);
 
-  // Nazwy regionów: sama dekoracja (nazwy są też w tekście strony), nie łapią kliknięć.
-  const panelEtykiet = map.createPane("etykiety");
-  panelEtykiet.setAttribute("aria-hidden", "true");
-  const odswiezEtykiety = () => panelEtykiet.classList.toggle("etykiety--ukryte", map.getZoom() > ZOOM_UKRYCIA_ETYKIET);
-  map.on("zoomend", odswiezEtykiety);
-  odswiezEtykiety();
-  function dodajEtykiety(regiony) {
-    if (!Array.isArray(regiony)) return console.warn("regiony.json: oczekiwano tablicy");
-    for (const r of regiony) {
-      if (!r || typeof r.nazwa !== "string" || !Number.isFinite(r.x) || !Number.isFinite(r.y)) continue;
-      L.marker([r.y, r.x], {
-        pane: "etykiety", interactive: false, keyboard: false,
-        icon: L.divIcon({ className: "etykieta-regionu", html: el("span", { textContent: r.nazwa }), iconSize: null })
-      }).addTo(map);
-    }
-  }
-
-  function ikona(kat, zrobione, nazwa) {
+  // Znaczek na pinezce: gwiazdka = ulubione, ołówek = jest notatka (obok ukrytej etykiety dla czytnika).
+  function ikona(z) {
+    const kat = kategoriePoId.get(z.kategoria);
+    const zrobione = zaliczone.has(z.id), ulub = ulubione.has(z.id), notka = maNotatke(z.id);
+    const opisy = [zrobione ? "zaliczone" : "", ulub ? "ulubione" : "", notka ? "z notatką" : ""].filter(Boolean);
     return L.divIcon({
       className: "",
       html: el("span", { className: "pin-wrap" },
         el("span", { className: "pin" + (zrobione ? " pin--zaliczone" : ""), style: `--kolor:${kat.kolor}`, textContent: zrobione ? "✓" : kat.znak, ariaHidden: "true" }),
-        el("span", { className: "ukryta-etykieta", textContent: nazwa + (zrobione ? " (zaliczone)" : "") })),
+        ulub ? el("span", { className: "pin__znak pin__znak--ulubione", textContent: "★", ariaHidden: "true" }) : null,
+        notka ? el("span", { className: "pin__znak pin__znak--notatka", textContent: "✎", ariaHidden: "true" }) : null,
+        el("span", { className: "ukryta-etykieta", textContent: z.nazwa + (opisy.length ? ` (${opisy.join(", ")})` : "") })),
       iconSize: [44, 44], // pole dotyku 44px, sam pin ma 30px
       iconAnchor: [22, 22],
       popupAnchor: [0, -18]
     });
+  }
+  function odswiezIkone(id) {
+    const wpis = znacznikiPoId.get(id);
+    if (wpis) wpis.marker.setIcon(ikona(wpis.dane));
   }
 
   // Strony znaczników generuje scripts/build.mjs – tylko dla prawdziwych, jawnych kategorii.
   function maStrone(z) {
     const kat = kategoriePoId.get(z.kategoria);
     return !z.przyklad && !!kat && !kat.spoiler && !kat.bezStron;
+  }
+
+  const jestZGtadb = (z) => z.zrodlo === "gtadb" || String(z.id).startsWith("gtadb-");
+
+  // Blok „Pewność”: skąd wiemy o miejscu. Nic nie dopowiadamy ponad to, co mówią dane.
+  function blokDowodu(z) {
+    const wiersze = [];
+    if (jestZGtadb(z)) {
+      wiersze.push(el("p", null,
+        el("strong", { textContent: "Pewność: " }), "Zidentyfikowane przez społeczność ",
+        el("a", { href: "https://map.gtadb.org", target: "_blank", rel: "noopener", textContent: "GTADB" }),
+        " · niepotwierdzone przed premierą"));
+    } else if (z.zrodlo === "zgloszenie") {
+      wiersze.push(el("p", null, el("strong", { textContent: "Pewność: " }), "Źródło: zgłoszenie"));
+    }
+    if (typeof z.odpowiednik === "string" && z.odpowiednik.trim())
+      wiersze.push(el("p", null, el("strong", { textContent: "Prawdziwy odpowiednik: " }), z.odpowiednik.trim()));
+    return wiersze.length ? el("div", { className: "popup__dowod" }, ...wiersze) : null;
+  }
+
+  function przyciskUlubionych(z) {
+    const p = el("button", { type: "button", className: "przycisk przycisk--maly popup__gwiazdka" });
+    const odswiez = () => {
+      const jest = ulubione.has(z.id);
+      p.setAttribute("aria-pressed", String(jest));
+      p.textContent = jest ? "★ W ulubionych" : "☆ Dodaj do ulubionych";
+    };
+    p.addEventListener("click", () => { ustawUlubione(z.id, !ulubione.has(z.id)); odswiez(); });
+    odswiez();
+    return p;
+  }
+
+  // Prywatna notatka: zapis po 400 ms od ostatniego znaku i przy opuszczeniu pola.
+  function blokNotatki(z) {
+    const pole = el("textarea", { className: "popup__notatka", maxLength: MAKS_NOTATKI, rows: 3, value: notatki[z.id] || "", placeholder: "Widoczna tylko w tej przeglądarce" });
+    pole.setAttribute("aria-label", "Moja notatka do: " + z.nazwa);
+    const status = el("span", { className: "popup__zapisano" });
+    status.setAttribute("role", "status");
+    const znak = el("span", { className: "popup__znak-notatki", textContent: " ✎ zapisana", hidden: !maNotatke(z.id) });
+    let czasZapisu = 0, czasKomunikatu = 0;
+    const zapisz = () => {
+      clearTimeout(czasZapisu);
+      const ok = zapiszNotatke(z.id, pole.value);
+      znak.hidden = !maNotatke(z.id);
+      status.textContent = ok ? "Zapisano" : "Nie zapisano – pamięć przeglądarki jest wyłączona";
+      clearTimeout(czasKomunikatu);
+      czasKomunikatu = setTimeout(() => { status.textContent = ""; }, 2500);
+    };
+    pole.addEventListener("input", () => { clearTimeout(czasZapisu); czasZapisu = setTimeout(zapisz, 400); });
+    pole.addEventListener("blur", () => { if (pole.value.trim() !== (notatki[z.id] || "")) zapisz(); });
+    pole.addEventListener("keydown", (e) => e.stopPropagation()); // strzałki i +/- w polu nie mają ruszać mapą
+    return el("details", { className: "popup__notatki" },
+      el("summary", null, "Moja notatka", znak),
+      pole,
+      el("div", { className: "popup__licznik-notatki" }, status));
   }
 
   function trescPopupu(z) {
@@ -149,8 +215,11 @@
         kat ? kat.nazwa : z.kategoria),
       z.region ? el("div", { className: "popup__region", textContent: z.region }) : null,
       z.opis ? el("p", { textContent: z.opis }) : null,
+      blokDowodu(z),
       z.przyklad ? el("p", { className: "popup__uwaga", textContent: "Przykładowy znacznik – prawdziwe lokalizacje dodamy po premierze." }) : null,
       el("label", { className: "popup__zaliczone" }, pole, el("span", { textContent: "Zaliczone" })),
+      przyciskUlubionych(z),
+      blokNotatki(z),
       linki
     );
   }
@@ -161,7 +230,7 @@
       if (wartosc) zaliczone.add(id); else zaliczone.delete(id);
       const wpis = znacznikiPoId.get(id);
       if (!wpis) continue;
-      wpis.marker.setIcon(ikona(kategoriePoId.get(wpis.dane.kategoria), wartosc, wpis.dane.nazwa));
+      odswiezIkone(id);
       if (ukryjZaliczone && wartosc) wpis.marker.closePopup();
     }
     pamiec.zapisz("zaliczone", [...zaliczone]);
@@ -169,9 +238,28 @@
     odswiezLiczniki();
   }
 
+  function ustawUlubione(id, wartosc) {
+    if (wartosc) ulubione.add(id); else ulubione.delete(id);
+    pamiec.zapisz("ulubione", [...ulubione]);
+    odswiezIkone(id);
+    odswiezWidocznosc(); // przy „Tylko ulubione” dymek zostaje otwarty, znacznik znika po jego zamknięciu (lista ulubionych też się odświeża)
+  }
+
+  // Zwraca false, gdy przeglądarka nie pozwoliła zapisać.
+  function zapiszNotatke(id, tekst) {
+    const bylo = maNotatke(id);
+    const t = tekst.trim().slice(0, MAKS_NOTATKI);
+    if (t) notatki[id] = t; else delete notatki[id];
+    const ok = pamiec.zapisz("notatki", notatki);
+    if (bylo !== maNotatke(id)) odswiezIkone(id); // ikona tylko przy pojawieniu się/zniknięciu notatki
+    return ok;
+  }
+
   function czyWidoczny(z) {
     if (z.id === wymuszony) return true;
-    return widoczneKategorie.has(z.kategoria) && !(ukryjZaliczone && zaliczone.has(z.id));
+    return widoczneKategorie.has(z.kategoria)
+      && !(ukryjZaliczone && zaliczone.has(z.id))
+      && !(tylkoUlubione && !ulubione.has(z.id));
   }
 
   // Wsadowo: addLayers/removeLayers przeliczają klastry raz, a nie przy każdym znaczniku.
@@ -184,12 +272,15 @@
     }
     if (usun.length) grupa.removeLayers(usun);
     if (dodaj.length) grupa.addLayers(dodaj);
+    zbudujUlubione(); // zmiana widocznych kategorii zmienia też, które ulubione wolno pokazać na liście
   }
 
   // --- Panel: filtry, postęp, wyszukiwarka ---
   const panel = document.getElementById("panel");
   const listaFiltrow = document.getElementById("filtry");
   const postepOgolny = document.getElementById("postep");
+  const listaUlubionych = document.getElementById("ulubione");
+  const ogloszenia = document.getElementById("ogloszenia");
   const licznikiKategorii = new Map();
   const przyciskPanelu = document.getElementById("przelacz-panel");
   const panelOtwarty = () => panel.classList.contains("panel--otwarty");
@@ -233,6 +324,58 @@
     }
   }
 
+  // Komunikat dla czytnika ekranu (ten sam tekst dwa razy z rzędu też zostanie odczytany).
+  function oglos(tekst) {
+    ogloszenia.textContent = "";
+    setTimeout(() => { ogloszenia.textContent = tekst; }, 50);
+  }
+
+  // Lista ulubionych w panelu. Spoilery (ukryta kategoria) nie pokazują się tu tak samo jak w wyszukiwarce.
+  let podpisUlubionych = null;
+  function zbudujUlubione() {
+    if (!listaUlubionych) return;
+    const wpisy = [...ulubione].map((id) => znacznikiPoId.get(id))
+      .filter((w) => w && !(kategoriePoId.get(w.dane.kategoria).spoiler && !widoczneKategorie.has(w.dane.kategoria)))
+      .sort((a, b) => a.dane.nazwa.localeCompare(b.dane.nazwa, "pl"));
+    const podpis = wpisy.map((w) => w.dane.id).join("|");
+    if (podpis === podpisUlubionych) return; // bez przebudowy (i utraty fokusu), gdy nic się nie zmieniło
+    podpisUlubionych = podpis;
+    document.getElementById("ulubione-licznik").textContent = wpisy.length ? ` (${wpisy.length})` : "";
+    listaUlubionych.replaceChildren();
+    if (!wpisy.length) {
+      listaUlubionych.append(el("li", { className: "panel__uwaga", textContent: "Brak ulubionych. Oznacz gwiazdką znacznik w jego dymku." }));
+      return;
+    }
+    for (const { dane } of wpisy) {
+      const kat = kategoriePoId.get(dane.kategoria);
+      const przycisk = el("button", { type: "button", className: "pozycja-panelu" },
+        el("span", { className: "pin pin--maly", style: `--kolor:${kat.kolor}`, textContent: kat.znak, ariaHidden: "true" }),
+        el("span", { className: "pozycja-panelu__nazwa", textContent: dane.nazwa }));
+      przycisk.addEventListener("click", () => pokazZnacznik(dane.id));
+      listaUlubionych.append(el("li", null, przycisk));
+    }
+  }
+
+  // Sekcja „Regiony”: obraz mapy ma już nazwy wydrukowane, więc tu tylko skróty do nich.
+  function zbudujRegiony(regiony) {
+    if (!Array.isArray(regiony)) return console.warn("regiony.json: oczekiwano tablicy");
+    const lista = document.getElementById("regiony");
+    for (const r of regiony) {
+      if (!r || typeof r.nazwa !== "string" || !Number.isFinite(r.x) || !Number.isFinite(r.y)) continue;
+      const przycisk = el("button", { type: "button", className: "przycisk przycisk--maly", textContent: r.nazwa });
+      przycisk.addEventListener("click", () => {
+        map.closePopup();
+        const zoom = Math.min(map.getMaxZoom(), Math.max(map.getMinZoom(), ZOOM_REGIONU));
+        if (bezAnimacji) map.setView([r.y, r.x], zoom, { animate: false });
+        else map.flyTo([r.y, r.x], zoom, { duration: 1 });
+        if (waskiEkran.matches) zamknijPanel();
+        oglos("Przeniesiono mapę do regionu " + r.nazwa);
+      });
+      lista.append(el("li", null, przycisk));
+    }
+    document.getElementById("sekcja-regiony").hidden = !lista.children.length;
+  }
+
   function odswiezLiczniki() {
     const ile = new Map(kategorie.map((k) => [k.id, { razem: 0, zrobione: 0 }]));
     for (const { dane } of znacznikiPoId.values()) {
@@ -259,6 +402,13 @@
     ukryj.addEventListener("change", () => {
       ukryjZaliczone = ukryj.checked;
       pamiec.zapisz("ukryjZaliczone", ukryjZaliczone);
+      odswiezWidocznosc();
+    });
+    const ulub = document.getElementById("tylko-ulubione");
+    ulub.checked = tylkoUlubione;
+    ulub.addEventListener("change", () => {
+      tylkoUlubione = ulub.checked;
+      pamiec.zapisz("tylkoUlubione", tylkoUlubione);
       odswiezWidocznosc();
     });
     document.getElementById("pokaz-wszystkie").addEventListener("click", () => {
@@ -362,12 +512,14 @@
     const lista = document.getElementById("wyniki");
     const status = document.getElementById("wyniki-status");
     let trafienia = [];
+    let rangi = []; // ranga dopasowania każdego trafienia (3 = po odpowiedniku, 5 = po notatce)
     let aktywny = -1;
 
     function zamknij() {
       lista.replaceChildren();
       lista.hidden = true;
       trafienia = [];
+      rangi = [];
       aktywny = -1;
       pole.setAttribute("aria-expanded", "false");
       pole.removeAttribute("aria-activedescendant");
@@ -393,18 +545,21 @@
       aktywny = -1;
       pole.removeAttribute("aria-activedescendant");
       if (fraza.length < 2) { zamknij(); status.textContent = ""; return; }
-      // Kolejność: początek nazwy, nazwa, region, kategoria, opis.
+      // Kolejność: początek nazwy, nazwa, region, odpowiednik, kategoria, opis, własna notatka.
       const wszystkie = [];
       for (const w of znacznikiPoId.values()) {
         const kat = kategoriePoId.get(w.dane.kategoria);
         if (kat.spoiler && !widoczneKategorie.has(kat.id)) continue;
         const s = w.szukaj;
         const ranga = s.nazwa.startsWith(fraza) ? 0 : s.nazwa.includes(fraza) ? 1 : s.region.includes(fraza) ? 2
-          : s.kategoria.includes(fraza) ? 3 : s.opis.includes(fraza) ? 4 : -1;
+          : s.odpowiednik.includes(fraza) ? 3 : s.kategoria.includes(fraza) ? 4 : s.opis.includes(fraza) ? 5
+          : maNotatke(w.dane.id) && bezOgonkow(notatki[w.dane.id]).includes(fraza) ? 6 : -1;
         if (ranga >= 0) wszystkie.push({ ranga, w });
       }
       wszystkie.sort((a, b) => a.ranga - b.ranga || a.w.dane.nazwa.localeCompare(b.w.dane.nazwa, "pl"));
-      trafienia = wszystkie.slice(0, MAKS_WYNIKOW).map((t) => t.w);
+      const widoczne = wszystkie.slice(0, MAKS_WYNIKOW);
+      trafienia = widoczne.map((t) => t.w);
+      rangi = widoczne.map((t) => t.ranga);
       status.textContent = wszystkie.length
         ? `${wszystkie.length} ${odmiana(wszystkie.length, "wynik", "wyniki", "wyników")}` + (wszystkie.length > MAKS_WYNIKOW ? `, pokazano ${MAKS_WYNIKOW}` : "")
         : "Brak wyników";
@@ -416,7 +571,8 @@
       }
       trafienia.forEach(({ dane }, i) => {
         const kat = kategoriePoId.get(dane.kategoria);
-        const opis = [kat.nazwa, dane.region].filter(Boolean).join(" · ");
+        const opis = [kat.nazwa, dane.region,
+          rangi[i] === 3 ? "≈ " + dane.odpowiednik.trim() : "", rangi[i] === 6 ? "✎ w Twojej notatce" : ""].filter(Boolean).join(" · ");
         const opcja = el("li", { id: "wynik-" + i, className: "wyniki__opcja" },
           el("span", { className: "pin pin--maly", style: `--kolor:${kat.kolor}`, textContent: zaliczone.has(dane.id) ? "✓" : kat.znak, ariaHidden: "true" }),
           el("span", { className: "wyniki__tekst" },
@@ -525,21 +681,26 @@
   window.addEventListener("hashchange", zastosujAdres);
 
   // --- Postęp: eksport i import pliku JSON ---
+  // wersja 1: tylko zaliczone; wersja 2: + ulubione i notatki. Import przyjmuje obie.
   const FORMAT_POSTEPU = "vicemap-postep";
-  const WERSJA_POSTEPU = 1;
+  const WERSJA_POSTEPU = 2;
   function komunikatPostepu(tekst, blad) {
     const e = document.getElementById("komunikat-postepu");
     e.textContent = tekst;
     e.classList.toggle("komunikat-postepu--blad", !!blad);
   }
   function pobierzPostep() {
-    const dane = { format: FORMAT_POSTEPU, wersja: WERSJA_POSTEPU, zapisano: new Date().toISOString(), zaliczone: [...zaliczone].sort() };
+    const dane = {
+      format: FORMAT_POSTEPU, wersja: WERSJA_POSTEPU, zapisano: new Date().toISOString(),
+      zaliczone: [...zaliczone].sort(), ulubione: [...ulubione].sort(), notatki: { ...notatki }
+    };
     const adres = URL.createObjectURL(new Blob([JSON.stringify(dane, null, 2)], { type: "application/json" }));
     const a = el("a", { href: adres, download: "vicemap-postep.json" });
     document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(adres), 1000);
-    komunikatPostepu(`Pobrano postęp (${zaliczone.size} zaliczonych).`);
+    komunikatPostepu(`Pobrano postęp (${zaliczone.size} zaliczonych, ${ulubione.size} ulubionych, ${Object.keys(notatki).length} notatek).`);
   }
+  const czyListaTekstow = (v) => Array.isArray(v) && v.every((id) => typeof id === "string");
   async function wczytajPostep(plik) {
     if (plik.size > 1024 * 1024) return komunikatPostepu("Plik jest za duży – to nie wygląda na postęp z ViceMap.", true);
     let dane;
@@ -549,15 +710,49 @@
       return komunikatPostepu("To nie jest plik postępu z ViceMap.", true);
     if (!Number.isInteger(dane.wersja) || dane.wersja < 1 || dane.wersja > WERSJA_POSTEPU)
       return komunikatPostepu("Nieobsługiwana wersja pliku postępu. Odśwież stronę i spróbuj ponownie.", true);
-    if (!Array.isArray(dane.zaliczone) || dane.zaliczone.some((id) => typeof id !== "string"))
+    if (!czyListaTekstow(dane.zaliczone))
       return komunikatPostepu("Plik jest uszkodzony: brak poprawnej listy zaliczonych.", true);
-    const znane = dane.zaliczone.filter((id) => znacznikiPoId.has(id));
-    const pominiete = dane.zaliczone.length - znane.length;
-    if (!znane.length && dane.zaliczone.length) return komunikatPostepu("Żaden znacznik z pliku nie istnieje na tej mapie.", true);
-    // Łączymy z obecnym postępem – import niczego nie odznacza.
-    const nowe = [...new Set(znane)].filter((id) => !zaliczone.has(id));
-    if (nowe.length) ustawZaliczone(nowe, true);
-    komunikatPostepu(`Wczytano postęp: ${nowe.length} nowych zaliczonych${pominiete ? `, pominięto ${pominiete} nieznanych znaczników` : ""}.`);
+    // Ulubione i notatki istnieją dopiero od wersji 2; w wersji 1 ewentualne pola o tych nazwach ignorujemy.
+    const v2 = dane.wersja >= 2;
+    const ulubioneZPliku = v2 && dane.ulubione !== undefined ? dane.ulubione : [];
+    const notatkiZPliku = v2 && dane.notatki !== undefined ? dane.notatki : {};
+    if (!czyListaTekstow(ulubioneZPliku))
+      return komunikatPostepu("Plik jest uszkodzony: ulubione mają niepoprawny format.", true);
+    if (!notatkiZPliku || typeof notatkiZPliku !== "object" || Array.isArray(notatkiZPliku))
+      return komunikatPostepu("Plik jest uszkodzony: notatki mają niepoprawny format.", true);
+
+    const wpisyNotatek = Object.entries(notatkiZPliku);
+    const razem = dane.zaliczone.length + ulubioneZPliku.length + wpisyNotatek.length;
+    const znaneZaliczone = [...new Set(dane.zaliczone.filter((id) => znacznikiPoId.has(id)))];
+    const znaneUlubione = [...new Set(ulubioneZPliku.filter((id) => znacznikiPoId.has(id)))];
+    const poprawneNotatki = wpisyNotatek
+      .filter(([id, t]) => znacznikiPoId.has(id) && typeof t === "string" && t.trim() && t.trim().length <= MAKS_NOTATKI)
+      .map(([id, t]) => [id, t.trim()]);
+    const przyjete = dane.zaliczone.filter((id) => znacznikiPoId.has(id)).length
+      + ulubioneZPliku.filter((id) => znacznikiPoId.has(id)).length + poprawneNotatki.length;
+    if (razem && !przyjete) return komunikatPostepu("Żaden znacznik z pliku nie istnieje na tej mapie.", true);
+    const pominiete = razem - przyjete;
+
+    // Łączymy z obecnym stanem – import niczego nie usuwa ani nie odznacza.
+    const noweZaliczone = znaneZaliczone.filter((id) => !zaliczone.has(id));
+    if (noweZaliczone.length) ustawZaliczone(noweZaliczone, true);
+    const noweUlubione = znaneUlubione.filter((id) => !ulubione.has(id));
+    for (const id of noweUlubione) { ulubione.add(id); odswiezIkone(id); }
+    if (noweUlubione.length) pamiec.zapisz("ulubione", [...ulubione]);
+    let noweNotatki = 0, konflikty = 0;
+    for (const [id, t] of poprawneNotatki) {
+      if (!maNotatke(id)) { notatki[id] = t; noweNotatki++; odswiezIkone(id); }
+      else if (notatki[id] !== t) konflikty++; // zostaje lokalna notatka
+    }
+    if (noweNotatki) pamiec.zapisz("notatki", notatki);
+    if (noweUlubione.length) odswiezWidocznosc();
+
+    const czesci = [`${noweZaliczone.length} nowych zaliczonych`];
+    if (v2) czesci.push(`${noweUlubione.length} nowych ulubionych`, `${noweNotatki} nowych notatek`);
+    let tekst = "Wczytano postęp: " + czesci.join(", ") + ".";
+    if (konflikty) tekst += ` Zostawiono ${konflikty} ${odmiana(konflikty, "lokalną notatkę", "lokalne notatki", "lokalnych notatek")} (inna treść w pliku).`;
+    if (pominiete) tekst += ` Pominięto ${pominiete} ${odmiana(pominiete, "niepoprawny lub nieznany wpis", "niepoprawne lub nieznane wpisy", "niepoprawnych lub nieznanych wpisów")}.`;
+    komunikatPostepu(tekst);
   }
 
   // --- Odliczanie do premiery: północ 19.11.2026 czasu lokalnego (godziny platform: poradniki/premiera.html) ---
@@ -596,8 +791,8 @@
     return odp.json();
   }
 
-  // Regiony są opcjonalne: brak pliku = mapa bez nazw regionów.
-  wczytaj("/data/regiony.json").then(dodajEtykiety, (blad) => console.warn("Brak nazw regionów na mapie:", blad.message));
+  // Regiony są opcjonalne: brak pliku = brak sekcji „Regiony” w panelu.
+  wczytaj("/data/regiony.json").then(zbudujRegiony, (blad) => console.warn("Brak listy regionów:", blad.message));
 
   Promise.all([wczytaj("/data/kategorie.json"), wczytaj("/data/znaczniki.json")])
     .then(([kat, znaczniki]) => {
@@ -606,6 +801,13 @@
       const domyslne = kat.filter((k) => !k.spoiler).map((k) => k.id);
       const zapisane = pamiec.czytaj("filtry", domyslne);
       widoczneKategorie = new Set((Array.isArray(zapisane) ? zapisane : domyslne).filter((id) => kategoriePoId.has(id)));
+      // Nowe kategorie (nieznane przy ostatniej wizycie) włączamy, żeby nie były niewidoczne dla stałych graczy.
+      // Brak zapisu = zapis sprzed rundy 3, gdy istniało tylko tych 10 kategorii.
+      const znane = pamiec.czytaj("znaneKategorie", ["orientacyjne", "kryjowki", "sklepy", "bron", "pojazdy", "znajdzki", "aktywnosci", "pieniadze", "sekrety", "misje"]);
+      if (Array.isArray(zapisane) && Array.isArray(znane)) {
+        for (const id of domyslne) if (!znane.includes(id)) widoczneKategorie.add(id);
+      }
+      pamiec.zapisz("znaneKategorie", kat.map((k) => k.id));
       // Adres ma pierwszeństwo przed zapisem w przeglądarce (bez nadpisywania zapisu).
       const pk = czytajParametry().get("k");
       const zAdresu = pk === null ? null : czytajKategorie(pk);
@@ -614,11 +816,21 @@
       for (const z of znaczniki) {
         const k = kategoriePoId.get(z.kategoria);
         if (!k) { console.warn("Nieznana kategoria znacznika", z); continue; }
-        const marker = L.marker([z.y, z.x], { icon: ikona(k, zaliczone.has(z.id), z.nazwa), title: z.nazwa });
+        const marker = L.marker([z.y, z.x], { icon: ikona(z), title: z.nazwa });
         marker.vicemapId = z.id;
-        marker.bindPopup(() => trescPopupu(z), { maxWidth: 280, autoPanPadding: [16, 72] });
+        // Szerokość i marginesy liczone przy każdym otwarciu (obrót telefonu zmienia ekran).
+        marker.bindPopup(() => {
+          const ekran = waskiEkran.matches;
+          Object.assign(marker.getPopup().options, {
+            maxWidth: Math.max(200, Math.min(300, window.innerWidth - 32)),
+            autoPanPaddingTopLeft: [64, 16],        // przyciski zoomu
+            autoPanPaddingBottomRight: [16, ekran ? 96 : 40] // „Filtry i szukaj” na telefonie
+          });
+          return trescPopupu(z);
+        }, { maxWidth: 300 });
         const szukaj = {
           nazwa: bezOgonkow(z.nazwa), region: bezOgonkow(z.region || ""),
+          odpowiednik: bezOgonkow(typeof z.odpowiednik === "string" ? z.odpowiednik : ""),
           kategoria: bezOgonkow(k.nazwa), opis: bezOgonkow(z.opis || "")
         };
         znacznikiPoId.set(z.id, { dane: z, marker, szukaj });
