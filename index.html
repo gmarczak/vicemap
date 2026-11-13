@@ -18,6 +18,7 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preload" as="image" href="/mapa.webp" type="image/webp">
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="/vendor/leaflet.markercluster-1.5.3/MarkerCluster.css">
   <link rel="stylesheet" href="/style.css">
   <script type="application/ld+json">
   {
@@ -42,9 +43,11 @@
 
   <div class="uklad-mapy">
     <aside id="panel" class="panel" aria-label="Filtry i wyszukiwarka">
+      <div class="panel__uchwyt" aria-hidden="true"></div>
       <label class="ukryta-etykieta" for="szukaj">Szukaj na mapie</label>
-      <input id="szukaj" class="szukaj" type="search" enterkeyhint="search" aria-controls="wyniki" placeholder="Szukaj: kryjówka, sklep, broń…" autocomplete="off">
-      <ul id="wyniki" class="wyniki" aria-label="Wyniki wyszukiwania" aria-live="polite"></ul>
+      <input id="szukaj" class="szukaj" type="search" enterkeyhint="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="wyniki" placeholder="Szukaj: nazwa, region, kategoria…" autocomplete="off" spellcheck="false">
+      <ul id="wyniki" class="wyniki" role="listbox" aria-label="Podpowiedzi wyszukiwania" hidden></ul>
+      <p id="wyniki-status" class="ukryta-etykieta" role="status" aria-live="polite"></p>
 
       <div id="postep" class="postep">
         <div class="postep__tekst">Zaliczone: 0 z 0 (0%)</div>
@@ -66,6 +69,16 @@
       </div>
       <p id="komunikat-postepu" class="panel__uwaga" role="status"></p>
       <button type="button" id="resetuj-postep" class="link-przycisk">Wyczyść postęp</button>
+      <details class="skroty">
+        <summary>Skróty klawiaturowe</summary>
+        <dl>
+          <dt><kbd>/</kbd></dt><dd>szukaj na mapie</dd>
+          <dt><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd></dt><dd>wybór podpowiedzi</dd>
+          <dt><kbd>f</kbd></dt><dd>filtry kategorii</dd>
+          <dt><kbd>+</kbd> <kbd>−</kbd></dt><dd>przybliż / oddal (gdy mapa ma fokus)</dd>
+          <dt><kbd>Esc</kbd></dt><dd>zamknij dymek, podpowiedzi lub panel</dd>
+        </dl>
+      </details>
     </aside>
 
     <div class="mapa-kontener">
@@ -77,7 +90,8 @@
   <main class="tresc">
     <h1>Interaktywna mapa GTA 6 po polsku</h1>
     <p>ViceMap to nieoficjalna mapa stanu Leonida z GTA 6: kryjówki, sklepy, broń, pojazdy, znajdźki i aktywności poboczne. Zaznaczaj zaliczone miejsca, a licznik pokaże, ile brakuje do 100%. Mapa działa na telefonie, więc możesz ją mieć obok konsoli.</p>
-    <p><strong>Stan na 12 listopada 2026:</strong> GTA 6 wychodzi 19 listopada 2026. Znaczniki na mapie są przykładowe – prawdziwe lokalizacje dodajemy od dnia premiery. <a href="/zglos.html">Znalazłeś coś w grze? Zgłoś znacznik.</a></p>
+    <p><strong>Stan na 13 listopada 2026:</strong> GTA 6 wychodzi 19 listopada 2026. Na mapie są punkty orientacyjne z <a href="https://map.gtadb.org" rel="noopener">GTADB</a> (licencja CC BY 4.0): znaki, budowle i rzeźby z trailerów rozpoznane przez społeczność – niepotwierdzone przed premierą. Kryjówki, sklepy, broń i znajdźki dodajemy od dnia premiery. <a href="/zglos.html">Znalazłeś coś w grze? Zgłoś znacznik.</a></p>
+    <p>Mapa obejmuje stan Leonida: Vice City, Leonida Keys, Grassrivers, Port Gellhorn, Ambrosia i Mount Kalaga. Więcej o każdym z nich w poradniku <a href="/poradniki/regiony.html">regiony Leonidy</a>.</p>
 
     <h2>Poradniki</h2>
     <ul class="lista-poradnikow">
@@ -103,6 +117,7 @@
 
   <script src="/js/config.js"></script>
   <script src="/vendor/leaflet/leaflet.js"></script>
+  <script src="/vendor/leaflet.markercluster-1.5.3/leaflet.markercluster.js"></script>
   <script src="/js/map.js"></script>
   <script src="/js/strona.js"></script>
 </body>

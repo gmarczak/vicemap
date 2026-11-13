@@ -110,12 +110,16 @@ textarea { min-height: 120px; resize: vertical; }
 .panel__uwaga { font-size: .8rem; color: var(--tekst-2); }
 .przelacznik { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
 .szukaj { margin-bottom: 6px; }
-.wyniki { list-style: none; margin: 0; padding: 0; }
-.wyniki button {
-  display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px; text-align: left;
-  font: inherit; color: var(--tekst); background: none; border: 0; border-radius: 8px; cursor: pointer;
+.wyniki {
+  list-style: none; margin: 0 0 8px; padding: 4px; max-height: 50vh; overflow-y: auto;
+  background: var(--tlo); border: 1px solid var(--linia); border-radius: var(--promien);
 }
-.wyniki button:hover { background: var(--panel-2); }
+.wyniki__opcja { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 8px; border-radius: 8px; cursor: pointer; }
+.wyniki__opcja:hover { background: var(--panel-2); }
+.wyniki__opcja[aria-selected="true"] { background: var(--panel-2); outline: 2px solid var(--akcent-2); outline-offset: -2px; }
+.wyniki__tekst { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.wyniki__opis { font-size: .78rem; color: var(--tekst-2); }
+.wyniki mark { background: rgba(255, 95, 162, .35); color: inherit; border-radius: 2px; }
 .wyniki__brak { padding: 8px; color: var(--tekst-2); font-size: .9rem; }
 
 .postep { margin: 14px 0 4px; }
@@ -128,19 +132,62 @@ textarea { min-height: 120px; resize: vertical; }
 .filtr:hover { background: var(--panel-2); }
 .filtr__nazwa { flex: 1; }
 .filtr__licznik { font-size: .8rem; color: var(--tekst-2); font-variant-numeric: tabular-nums; }
+/* Lista filtrów jest też legendą; puste kategorie przygaszone do premiery */
+.filtr__dopisek { display: none; font-size: .75rem; color: var(--tekst-2); line-height: 1.2; }
+.filtr--puste .filtr__nazwa { color: var(--tekst-2); }
+.filtr--puste .filtr__dopisek { display: block; }
+.filtr--puste .pin { opacity: .45; }
 
 .przelacz-panel { display: none; }
+.panel__uchwyt { display: none; }
 
-/* --- Znaczniki --- */
+/* Skróty klawiaturowe (na dotykowych ekranach zbędne) */
+.skroty { margin-top: 12px; font-size: .85rem; color: var(--tekst-2); }
+.skroty summary { padding: 10px 0; cursor: pointer; }
+.skroty dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0 0 8px; }
+.skroty dd { margin: 0; }
+kbd {
+  display: inline-block; min-width: 1.6em; padding: 1px 6px; text-align: center;
+  font: 600 .8rem/1.4 system-ui, sans-serif; color: var(--tekst);
+  background: var(--panel-2); border: 1px solid var(--linia); border-bottom-width: 2px; border-radius: 4px;
+}
+@media (hover: none) and (pointer: coarse) { .skroty { display: none; } }
+
+/* --- Znaczniki: biała obwódka + cień, żeby pin był czytelny na jasnym i ciemnym tle --- */
 .pin {
   display: inline-flex; align-items: center; justify-content: center;
   width: 30px; height: 30px; border-radius: 50%;
   font: 700 14px/1 system-ui, sans-serif; color: #12101c;
   background: var(--kolor, #ccc); border: 2px solid #12101c;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, .6);
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .9), 0 2px 6px rgba(0, 0, 0, .7);
 }
 .pin--maly { width: 22px; height: 22px; font-size: 11px; box-shadow: none; flex: none; }
-.pin--zaliczone { opacity: .75; filter: grayscale(.6); }
+.pin--zaliczone {
+  background: #4a4560; background: color-mix(in srgb, var(--kolor) 30%, #2a2638);
+  color: #fff; border-color: #0b0a12; opacity: .8;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .45), 0 1px 3px rgba(0, 0, 0, .6);
+}
+.pin-wrap { display: block; }
+
+/* Klastry: liczba znaczników w kółku w kolorach strony, cel dotykowy min. 44px */
+.klaster-ikona { background: none; border: 0; }
+.klaster {
+  display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;
+  border-radius: 50%; font: 800 15px/1 system-ui, sans-serif; color: #fff;
+  background: rgba(29, 26, 44, .92); border: 3px solid var(--akcent);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, .85), 0 2px 8px rgba(0, 0, 0, .7);
+}
+.klaster-ikona:hover .klaster { border-color: var(--akcent-2); }
+
+/* Nazwy regionów: dekoracja, bez kliknięć, chowane przy dużym przybliżeniu */
+.leaflet-etykiety-pane { z-index: 450; pointer-events: none; }
+.etykiety--ukryte { display: none; }
+.etykieta-regionu { pointer-events: none; }
+.etykieta-regionu span {
+  position: absolute; transform: translate(-50%, -50%); white-space: nowrap;
+  font: 800 13px/1 system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #fff;
+  text-shadow: 0 0 2px #0b0a12, 0 0 4px #0b0a12, 0 0 8px #0b0a12, 0 1px 2px #000;
+}
 
 /* --- Dymki Leafleta w ciemnym motywie --- */
 .leaflet-container { font: inherit; background: #0b0a12; }
@@ -148,11 +195,24 @@ textarea { min-height: 120px; resize: vertical; }
 .leaflet-popup-content { margin: 12px 14px; }
 .leaflet-container a.leaflet-popup-close-button { color: var(--tekst-2); }
 .leaflet-bar a, .leaflet-bar a:hover { background: var(--panel); color: var(--tekst); border-color: var(--linia); }
-.popup__kategoria { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--tekst-2); }
-.popup__nazwa { display: block; font-size: 1.05rem; margin: 2px 0 4px; }
-.popup p { margin: 4px 0 8px; }
+.popup__nazwa { display: block; font-size: 1.1rem; line-height: 1.3; margin: 0 28px 6px 0; }
+.popup__kategoria { display: flex; align-items: center; gap: 6px; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--tekst-2); }
+.popup__region { font-size: .85rem; color: var(--tekst-2); margin-top: 2px; }
+.popup p { margin: 6px 0 8px; }
 .popup__uwaga { font-size: .8rem; color: var(--tekst-2); }
-.popup__zaliczone { display: flex; gap: 6px; align-items: center; margin: 8px 0; font-weight: 600; }
+.popup__zaliczone { display: flex; gap: 10px; align-items: center; margin: 8px 0; font-weight: 600; cursor: pointer; }
+/* Duży przełącznik „Zaliczone” (checkbox z role="switch") */
+.popup__zaliczone input {
+  -webkit-appearance: none; appearance: none; position: relative; flex: none; margin: 0;
+  width: 46px; height: 28px; border-radius: 999px; cursor: pointer;
+  background: var(--panel-2); border: 2px solid var(--linia); transition: background .15s, border-color .15s;
+}
+.popup__zaliczone input::before {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--tekst-2); transition: transform .15s;
+}
+.popup__zaliczone input:checked { background: #2e7d5b; border-color: #69f0ae; }
+.popup__zaliczone input:checked::before { transform: translateX(18px); background: #fff; }
 .popup__akcje { display: flex; flex-wrap: wrap; gap: 6px; }
 .popup code { display: block; margin: 6px 0; padding: 6px; font-size: .75rem; background: var(--tlo); border-radius: 6px; word-break: break-all; }
 .tryb-edytora #map { cursor: crosshair; }
@@ -168,7 +228,7 @@ textarea { min-height: 120px; resize: vertical; }
 
 /* --- Telefon: mapa na cały ekran, panel jako wysuwana szuflada --- */
 @media (max-width: 760px) {
-  .uklad-mapy { display: block; position: relative; }
+  .uklad-mapy { display: block; position: relative; overflow: hidden; } /* zamknięta szuflada nie wystaje pod mapę */
   .mapa-kontener { height: 100%; }
   .panel {
     position: absolute; z-index: 1100; left: 0; right: 0; bottom: 0; width: auto; max-height: 75%;
@@ -207,11 +267,11 @@ textarea { min-height: 120px; resize: vertical; }
 
 /* --- Mobile i dostępność --- */
 .leaflet-marker-icon.pin-wrap, .leaflet-div-icon { background: none; border: 0; }
-.leaflet-marker-icon > .pin { margin: 7px; }
+.leaflet-marker-icon .pin { margin: 7px; }
 .leaflet-marker-icon:focus-visible { outline: 2px solid var(--akcent-2); outline-offset: -4px; border-radius: 50%; }
 .panel { overscroll-behavior: contain; }
-.filtr, .przelacznik, .wyniki button { min-height: 44px; }
-.filtr input, .przelacznik input, .popup__zaliczone input { width: 22px; height: 22px; flex: none; accent-color: var(--akcent); }
+.filtr, .przelacznik { min-height: 44px; }
+.filtr input, .przelacznik input { width: 22px; height: 22px; flex: none; accent-color: var(--akcent); }
 .popup__zaliczone { min-height: 44px; }
 .leaflet-bar a { width: 44px; height: 44px; line-height: 44px; }
 .leaflet-touch .leaflet-bar a { width: 44px; height: 44px; line-height: 44px; }
@@ -224,7 +284,15 @@ nav a { display: inline-flex; align-items: center; min-height: 44px; }
 .logo { display: inline-flex; align-items: center; min-height: 44px; }
 
 @media (max-width: 760px) {
-  .panel { max-height: 70%; }
+  .panel { max-height: 70%; padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+  .panel__uchwyt {
+    display: block; position: sticky; top: -14px; z-index: 1; height: 26px; margin: -14px -16px 6px;
+    background: var(--panel); border-radius: 16px 16px 0 0; cursor: pointer;
+  }
+  .panel__uchwyt::before {
+    content: ""; position: absolute; left: 50%; top: 10px; width: 44px; height: 5px; margin-left: -22px;
+    border-radius: 999px; background: var(--linia);
+  }
   .przelacz-panel { min-height: 48px; padding: 8px 22px; }
   .leaflet-control-attribution { max-width: 60vw; }
   .leaflet-bottom.leaflet-right { margin-bottom: 72px; } /* nad przyciskiem szuflady */
