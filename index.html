@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>ViceMap – interaktywna mapa GTA 6 po polsku</title>
-  <meta name="description" content="Interaktywna mapa GTA 6 po polsku: 390 miejsc Leonidy (sklepy, hotele, transport, punkty orientacyjne), wyszukiwarka, ulubione i tracker postępu. Działa na telefonie.">
+  <meta name="description" content="Interaktywna mapa GTA 6 po polsku: 403 miejsca Leonidy (sklepy, hotele, transport, punkty orientacyjne), wyszukiwarka, ulubione i tracker postępu. Działa na telefonie.">
   <link rel="canonical" href="https://vicemap.pl/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ViceMap">
   <meta property="og:title" content="ViceMap – interaktywna mapa GTA 6 po polsku">
-  <meta property="og:description" content="390 miejsc Leonidy, wyszukiwarka, ulubione, notatki i tracker postępu. Po polsku, na telefon.">
+  <meta property="og:description" content="403 miejsca Leonidy, wyszukiwarka, ulubione, notatki i tracker postępu. Po polsku, na telefon.">
   <meta property="og:url" content="https://vicemap.pl/">
   <meta property="og:image" content="https://vicemap.pl/img/og.png">
   <meta name="theme-color" content="#12101c">
@@ -19,6 +19,8 @@
   <link rel="preload" as="image" href="/mapa.webp" type="image/webp">
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="/vendor/leaflet.markercluster-1.5.3/MarkerCluster.css">
+  <link rel="stylesheet" href="/vendor/leaflet.fullscreen-5.3.3/Control.FullScreen.css">
+  <link rel="stylesheet" href="/vendor/leaflet-minimap-3.6.1/Control.MiniMap.min.css">
   <link rel="stylesheet" href="/style.css">
   <script type="application/ld+json">
   {
@@ -102,7 +104,7 @@
   <main class="tresc">
     <h1>Interaktywna mapa GTA 6 po polsku</h1>
     <p>ViceMap to nieoficjalna mapa stanu Leonida z GTA 6: sklepy, lokale, hotele, transport, służby i punkty orientacyjne, a od premiery także kryjówki, znajdźki i aktywności poboczne. Zaznaczaj zaliczone miejsca, a licznik pokaże, ile brakuje do 100%. Mapa działa na telefonie, więc możesz ją mieć obok konsoli.</p>
-    <p><strong>Stan na 13 listopada 2026:</strong> GTA 6 wychodzi 19 listopada 2026. Na mapie jest 390 miejsc z <a href="https://map.gtadb.org" rel="noopener">GTADB</a> (licencja CC BY 4.0): sklepy, lokale, hotele, stacje, budowle i znaki z trailerów rozpoznane przez społeczność – niepotwierdzone przed premierą. Kryjówki, znajdźki i pozostałe sklepy z bronią dodajemy od dnia premiery. <a href="/zglos.html">Znalazłeś coś w grze? Zgłoś znacznik.</a></p>
+    <p><strong>Stan na 13 listopada 2026:</strong> GTA 6 wychodzi 19 listopada 2026. Na mapie jest 403 miejsca z <a href="https://map.gtadb.org" rel="noopener">GTADB</a> (licencja CC BY 4.0): sklepy, lokale, hotele, stacje, budowle i znaki z trailerów rozpoznane przez społeczność – niepotwierdzone przed premierą. Kryjówki, znajdźki i pozostałe sklepy z bronią dodajemy od dnia premiery. <a href="/zglos.html">Znalazłeś coś w grze? Zgłoś znacznik.</a></p>
     <p>Mapa obejmuje stan Leonida: Vice City, Leonida Keys, Grassrivers, Port Gellhorn, Ambrosia i Mount Kalaga. Więcej o każdym z nich w poradniku <a href="/poradniki/regiony.html">regiony Leonidy</a>.</p>
 
     <h2>Poradniki</h2>
@@ -116,27 +118,27 @@
     </ul>
     <!-- BUILD:glowna -->
     <h2>Co to jest ViceMap</h2>
-    <p>ViceMap to nieoficjalna, polskojęzyczna mapa GTA 6, zbudowana na otwartych danych społeczności GTADB (CC BY 4.0). Na mapie jest 390 miejsc z Leonidy, z okolicą i prawdziwym odpowiednikiem tam, gdzie społeczność go wskazała. Przed premierą 19.11.2026 położenie punktów jest niepotwierdzone: po premierze porównamy je z grą. <a href="/o-projekcie.html">Skąd mamy dane i jak oznaczamy pewność</a> · <a href="/dziennik-zmian.html">Dziennik zmian</a>.</p>
+    <p>ViceMap to nieoficjalna, polskojęzyczna mapa GTA 6, zbudowana na otwartych danych społeczności GTADB (CC BY 4.0). Na mapie jest 403 miejsca z Leonidy, z okolicą i prawdziwym odpowiednikiem tam, gdzie społeczność go wskazała. Przed premierą 19.11.2026 położenie punktów jest niepotwierdzone: po premierze porównamy je z grą. <a href="/o-projekcie.html">Skąd mamy dane i jak oznaczamy pewność</a> · <a href="/dziennik-zmian.html">Dziennik zmian</a>.</p>
     <h2>Kategorie miejsc</h2>
     <ul class="lista-poradnikow">
-      <li><a href="/kategorie/orientacyjne.html">Punkty orientacyjne</a> – 124 punkty</li>
-      <li><a href="/kategorie/sklepy.html">Sklepy</a> – 64 punkty</li>
-      <li><a href="/kategorie/jedzenie.html">Jedzenie i kluby</a> – 28 punktów</li>
-      <li><a href="/kategorie/uslugi.html">Usługi</a> – 23 punkty</li>
+      <li><a href="/kategorie/orientacyjne.html">Punkty orientacyjne</a> – 127 punktów</li>
+      <li><a href="/kategorie/sklepy.html">Sklepy</a> – 67 punktów</li>
+      <li><a href="/kategorie/jedzenie.html">Jedzenie i kluby</a> – 30 punktów</li>
+      <li><a href="/kategorie/uslugi.html">Usługi</a> – 26 punktów</li>
       <li><a href="/kategorie/stacje-paliw.html">Stacje paliw</a> – 20 punktów</li>
       <li><a href="/#k=bron">Broń</a> – 2 punkty</li>
-      <li><a href="/kategorie/hotele.html">Hotele i motele</a> – 27 punktów</li>
+      <li><a href="/kategorie/hotele.html">Hotele i motele</a> – 28 punktów</li>
       <li><a href="/kategorie/rozrywka.html">Rozrywka i sport</a> – 28 punktów</li>
       <li><a href="/kategorie/sluzby.html">Służby i urzędy</a> – 15 punktów</li>
-      <li><a href="/kategorie/transport.html">Transport</a> – 59 punktów</li>
+      <li><a href="/kategorie/transport.html">Transport</a> – 60 punktów</li>
       <li><a href="/kategorie/">Wszystkie kategorie</a></li>
     </ul>
     <h2>Regiony Leonidy</h2>
     <ul class="lista-poradnikow">
-      <li><a href="/regiony/vice-city.html">Vice City</a> – 167 punktów</li>
+      <li><a href="/regiony/vice-city.html">Vice City</a> – 169 punktów</li>
       <li><a href="/regiony/leonida-keys.html">Leonida Keys</a> – 15 punktów</li>
       <li><a href="/#v=1785,1028,1">Grassrivers</a> – pokaż na mapie</li>
-      <li><a href="/regiony/port-gellhorn.html">Port Gellhorn</a> – 33 punkty</li>
+      <li><a href="/regiony/port-gellhorn.html">Port Gellhorn</a> – 34 punkty</li>
       <li><a href="/regiony/ambrosia.html">Ambrosia</a> – 8 punktów</li>
       <li><a href="/#v=1667,3316,1">Mount Kalaga</a> – pokaż na mapie</li>
       <li><a href="/poradniki/regiony.html">Opis wszystkich regionów</a></li>
@@ -155,7 +157,7 @@
 
   <footer class="stopka">
     <p>Nieoficjalna strona fanowska, niepowiązana z Rockstar Games ani Take-Two Interactive. Grand Theft Auto jest znakiem towarowym Take-Two Interactive.</p>
-    <p class="atrybucja">Mapa i punkty orientacyjne: <a href="https://map.gtadb.org" rel="noopener">GTADB</a> / Yanis V17, <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a> (zmieniono: przycięcie i zmniejszenie).</p>
+    <p class="atrybucja">Mapa, kafelki i punkty orientacyjne: <a href="https://map.gtadb.org" rel="noopener">GTADB</a> / Yanis V17, <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a> (zmieniono: przycięcie obszaru i zmniejszenie obrazu).</p>
     <p>
       <a href="/polityka-prywatnosci.html">Polityka prywatności</a> ·
       <a href="/o-projekcie.html">O projekcie i źródłach danych</a> ·
@@ -169,6 +171,8 @@
   <script src="/js/config.js"></script>
   <script src="/vendor/leaflet/leaflet.js"></script>
   <script src="/vendor/leaflet.markercluster-1.5.3/leaflet.markercluster.js"></script>
+  <script src="/vendor/leaflet.fullscreen-5.3.3/Control.FullScreen.umd.js"></script>
+  <script src="/vendor/leaflet-minimap-3.6.1/Control.MiniMap.min.js"></script>
   <script src="/js/map.js"></script>
   <script src="/js/strona.js"></script>
 </body>

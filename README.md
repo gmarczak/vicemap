@@ -30,13 +30,17 @@ i otwórz http://localhost:3000.
 | `scripts/build.mjs` | Generuje `znaczniki/*.html`, `kategorie/*.html` (od 5 punktów, plus spis `kategorie/`), `regiony/*.html` (noindex poniżej 5 punktów), `dziennik-zmian.html`, sekcję na stronie głównej (między `<!-- BUILD:glowna -->`) i `sitemap.xml` |
 | `scripts/sprawdz-linki.mjs` | Sprawdza linki wewnętrzne, fragmenty `#id` i zgodność sitemap ze stronami |
 | `supabase/zgloszenia.sql` | Tabela na zgłoszenia |
-| `sw.js`, `manifest.webmanifest` | Tryb offline i „Dodaj do ekranu głównego” |
+| `sw.js`, `manifest.webmanifest` | Tryb offline i „Dodaj do ekranu głównego”. Kafelki mapy (`/tiles/`) mają osobny cache `vicemap-kafelki` (w locie, limit 800, nie są prekaszowane) |
+| `tiles/yanis-17/{z}/{x}_{y}.jpg` | Kafelki mapy GTADB (CC BY 4.0), poziomy 0-4, 1624 pliki, ok. 8 MB, tylko obszar mapy (bez panelu z legendą i zrzutami Rockstara). Licencja i opis zmian: `tiles/LICENSE-TILES.txt`. Pobranie/odświeżenie: `python -I scripts/pobierz-kafelki.py` (Pillow). `mapa.webp` zostaje jako podkład offline pod kafelkami |
+| `scripts/aktualizuj-gtadb.mjs`, `data/gtadb-wybor.json` | Synchronizacja z GTADB: `node scripts/aktualizuj-gtadb.mjs [--plik landmarks.json]` wypisuje nowe punkty z nazwą z gry (po filtrze szumu), przesunięte, zmienione i usunięte u źródła. `--zapisz` dopisuje tylko nowe punkty z `data/gtadb-wybor.json` (ręcznie przejrzone: kategoria + etykieta), `--uzupelnij-gps` dopisuje `odpowiednikGps`, `--przesun` przesuwa istniejące (domyślnie nigdy). Nigdy nie zmienia istniejących `id` |
+| `scripts/pobierz-kafelki.py` | Pobiera i przycina kafelki GTADB do `tiles/` |
+| `vendor/leaflet.fullscreen-5.3.3`, `vendor/leaflet-minimap-3.6.1` | Wtyczki Leaflet: pełny ekran ([leaflet.fullscreen](https://github.com/brunob/leaflet.fullscreen), MIT) i minimapa ([Leaflet-MiniMap](https://github.com/Norkart/Leaflet-MiniMap), BSD-2-Clause); sumy kontrolne tarballi zgodne z registry.npmjs.org. Miniatura mapy dla minimapy: `img/podglad-mapy.webp` (320 px, z `mapa.webp`) |
 
 ## Jak dodać znacznik
 
 1. Otwórz mapę z dopiskiem `?edytor`, np. http://localhost:3000/?edytor
 2. Kliknij miejsce na mapie – dostaniesz gotowy wpis z `x` i `y`. Kliknij „Kopiuj”.
-3. Wklej go do `data/znaczniki.json` i uzupełnij:
+3. Wklej go do `data/znaczniki.json` i uzupełnij (opcjonalnie `odpowiednikGps: [lat, lon]` – wtedy popup ma link „Zobacz prawdziwe miejsce (OpenStreetMap)”, zwykły odnośnik, nic z OSM się nie ładuje):
    - `id` – unikalny, małe litery, cyfry i myślniki, bez polskich znaków (np. `sklep-z-bronia-ocean-beach`). **Nie zmieniaj go później** – na nim opiera się zapisany postęp graczy i adres strony znacznika.
    - `kategoria` – `id` z `data/kategorie.json`
    - `nazwa`, `opis`, opcjonalnie `region`
@@ -58,6 +62,8 @@ Znaczniki z kategorii ze spoilerami (misje) też nie dostają stron, żeby nie z
 
 Zasady:
 - Tylko jawnie otwarte źródła (np. GTADB, CC BY 4.0) z atrybucją w stopce; nic z przecieków, nic cudzego bez licencji.
+- Stan danych: 403 znaczniki (z GTADB, CC BY 4.0). Atrybucja kafelków: „GTA VI Map Tiles (CC BY 4.0) — https://map.gtadb.org” (stopka, mapa, O projekcie, `tiles/LICENSE-TILES.txt`). Po dodaniu znaczników zaktualizuj liczbę w meta description `index.html` i wpis w `data/zmiany.json`.
+- Hosting: dla `/tiles/` warto dodać w `vercel.json` nagłówek `Cache-Control: public, max-age=2592000, stale-while-revalidate=86400` (kafelki są statyczne; zmieniając je, zmień też ścieżkę katalogu).
 - Dane z GTADB (CC BY 4.0) są oznaczone jako niepotwierdzone przed premierą. Sklepy, hotele i transport mają punkty z GTADB; kategoria `bron` tylko sklepy z bronią nazwane w GTADB; `kryjowki` i `znajdzki` zostają puste do premiery.
 - `id` raz nadane się nie zmienia (postęp graczy i adres strony).
 

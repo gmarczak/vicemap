@@ -68,12 +68,102 @@
     maxZoom: 3,
     maxBounds: [[-MAPA.wysokosc * 0.25, -MAPA.szerokosc * 0.25], [MAPA.wysokosc * 1.25, MAPA.szerokosc * 1.25]],
     zoomSnap: 0.25,
-    attributionControl: true
+    attributionControl: true,
+    // Wtyczka leaflet.fullscreen (MIT): przycisk w pasku zoomu, native Fullscreen API (Esc zamyka), role=button i aria-label od wtyczki.
+    fullscreenControl: !!(window.L && L.Control && L.Control.FullScreen),
+    fullscreenControlOptions: { title: "Pełny ekran", titleCancel: "Zamknij pełny ekran" }
   });
   map.attributionControl.setPrefix(false).addAttribution(
-    'Mapa i punkty: <a href="https://map.gtadb.org" target="_blank" rel="noopener">GTADB</a> / Yanis V17, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> (zmieniono)'
+    'Mapa, kafelki i punkty: <a href="https://map.gtadb.org" target="_blank" rel="noopener">GTADB</a> / Yanis V17, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> (zmieniono: przycięcie)'
   );
-  L.imageOverlay(MAPA.obraz, granice).addTo(map);
+  // Podkład: jeden obraz (działa offline i zanim dojdą kafelki), pod kafelkami.
+  map.createPane("podklad").style.zIndex = 150;
+  L.imageOverlay(MAPA.obraz, granice, { pane: "podklad" }).addTo(map);
+
+  // Kafelki GTADB (zestaw yanis,17, poziomy 0-4, wycięte do obszaru mapy; patrz scripts/pobierz-kafelki.py i tiles/LICENSE-TILES.txt).
+  // Układ współrzędnych znaczników zostaje (jednostki obrazu, y od dołu): kafelek (zs, tx, ty) leży na pikselach bezwzględnych
+  // abs = 1280·2^(zs-3) + jednostki·PX3·2^(zs-3), gdzie PX3 = 3760/3200 to piksele obrazu z=3 na jednostkę mapy.
+  // Warstwa rysuje każdy kafelek Leafleta na własnym <canvas> z 1-4 kafelków źródłowych; nic poza widocznymi się nie pobiera.
+  const PX3 = 3760 / 3200;
+  const KAFELKI = "/tiles/yanis-17/";
+  const zakresKafelkow = (zs) => { // indeksy istniejących plików na poziomie źródłowym zs (0-4)
+    const s = Math.pow(2, zs - 3);
+    return { x0: Math.floor(1280 * s / 256), x1: Math.floor((5040 * s - 1) / 256), y0: Math.floor(1280 * s / 256), y1: Math.floor((6400 * s - 1) / 256) };
+  };
+  const obrazyKafelkow = new Map(); // url -> Promise<Image|null>
+  function wczytajKafelek(url) {
+    if (!obrazyKafelkow.has(url)) {
+      if (obrazyKafelkow.size > 80) obrazyKafelkow.delete(obrazyKafelkow.keys().next().value);
+      obrazyKafelkow.set(url, new Promise((ok) => {
+        const im = new Image();
+        im.onload = () => ok(im);
+        im.onerror = () => { obrazyKafelkow.delete(url); ok(null); }; // offline / brak pliku: zostaje podkład
+        im.decoding = "async";
+        im.src = url;
+      }));
+    }
+    return obrazyKafelkow.get(url);
+  }
+  const WarstwaKafelkow = L.GridLayer.extend({
+    options: { tileSize: 256, bounds: L.latLngBounds(granice), minZoom: -6, maxNativeZoom: 2, keepBuffer: 1, updateWhenZooming: false, pane: "tilePane", attribution: "" },
+    createTile(coords, gotowe) {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2), bok = this.options.tileSize;
+      const plotno = document.createElement("canvas");
+      plotno.width = plotno.height = Math.round(bok * dpr);
+      const sc = Math.pow(2, coords.z);                         // piksele ekranu na jednostkę mapy na tym zoomie
+      const zs = Math.max(0, Math.min(4, Math.ceil(Math.log2(sc * dpr / PX3) + 3 - 1e-9))); // najmniejszy poziom źródłowy nie gorszy niż ekran
+      const sp = PX3 * Math.pow(2, zs - 3);                     // piksele źródła na jednostkę
+      const skala = sc * dpr / sp;                              // piksele płótna na piksel źródła (<= 1, poza zoomem > 4)
+      const baza = 1280 * Math.pow(2, zs - 3);
+      const lewo = baza + (coords.x * bok / sc) * sp;           // bezwzględny piksel źródła przy lewej krawędzi płótna
+      const gora = baza + (MAPA.wysokosc + coords.y * bok / sc) * sp; // y płótna rośnie w dół, y mapy od dołu: y_mapy = -coords.y*bok/sc
+      const r = zakresKafelkow(zs);
+      const tx0 = Math.max(r.x0, Math.floor(lewo / 256)), tx1 = Math.min(r.x1, Math.floor((lewo + bok / sc * sp) / 256));
+      const ty0 = Math.max(r.y0, Math.floor(gora / 256)), ty1 = Math.min(r.y1, Math.floor((gora + bok / sc * sp) / 256));
+      const zadania = [];
+      for (let tx = tx0; tx <= tx1; tx++) for (let ty = ty0; ty <= ty1; ty++) zadania.push([tx, ty, wczytajKafelek(`${KAFELKI}${zs}/${tx}_${ty}.jpg`)]);
+      Promise.all(zadania.map((t) => t[2])).then((obrazy) => {
+        const ctx = plotno.getContext("2d");
+        ctx.imageSmoothingQuality = "high";
+        obrazy.forEach((im, i) => {
+          if (!im) return;
+          const [tx, ty] = zadania[i];
+          // +0.5 px nakładki ukrywa szwy między kafelkami źródłowymi
+          ctx.drawImage(im, (tx * 256 - lewo) * skala, (ty * 256 - gora) * skala, im.naturalWidth * skala + 0.5, im.naturalHeight * skala + 0.5);
+        });
+        gotowe(null, plotno);
+      });
+      return plotno;
+    }
+  });
+  new WarstwaKafelkow().addTo(map);
+
+  // Minimapa (Leaflet-MiniMap, BSD-2-Clause): mały podgląd całej mapy z ramką bieżącego widoku; kliknięcie przesuwa mapę.
+  // Tylko na szerokich ekranach (>900 px; na telefonie i małym tablecie zasłaniałaby mapę); obraz img/podglad-mapy.webp (320 px) jest wygenerowany z mapa.webp.
+  const MINIMAPA_SZER = 150;
+  const szerokiEkran = window.matchMedia("(min-width: 901px)");
+  let minimapa = null;
+  function ustawMinimape() {
+    if (!(window.L && L.Control && L.Control.MiniMap)) return;
+    if (!szerokiEkran.matches) { if (minimapa) { map.removeControl(minimapa); minimapa = null; } return; }
+    if (minimapa) return;
+    minimapa = new L.Control.MiniMap(L.imageOverlay("/img/podglad-mapy.webp", granice), {
+      position: "bottomright", toggleDisplay: true, collapsedWidth: 28, collapsedHeight: 28, width: MINIMAPA_SZER, height: Math.round(MINIMAPA_SZER * MAPA.wysokosc / MAPA.szerokosc),
+      zoomLevelFixed: Math.log2(MINIMAPA_SZER / MAPA.szerokosc), centerFixed: [MAPA.wysokosc / 2, MAPA.szerokosc / 2],
+      aimingRectOptions: { color: "#4fc3f7", weight: 2 }, shadowRectOptions: { color: "#4fc3f7", weight: 1 },
+      strings: { hideText: "Ukryj minimapę", showText: "Pokaż minimapę" },
+      mapOptions: { zoomSnap: 0, minZoom: -8, maxZoom: 0, keyboard: false }
+    }).addTo(map);
+    const kontener = minimapa.getContainer();
+    kontener.setAttribute("role", "region");
+    kontener.setAttribute("aria-label", "Minimapa: przegląd całej mapy");
+    const przycisk = minimapa._toggleDisplayButton;
+    przycisk.setAttribute("role", "button");
+    const opisz = (zwinieta) => { przycisk.setAttribute("aria-label", zwinieta ? "Pokaż minimapę" : "Ukryj minimapę"); przycisk.setAttribute("aria-expanded", String(!zwinieta)); };
+    opisz(false);
+    minimapa.on("toggle", (e) => opisz(e.minimized));
+    minimapa._miniMap.on("click", (e) => map.panTo(e.latlng)); // centerFixed wyłącza przeciąganie minimapy, więc klik = skok na mapie głównej
+  }
   map.fitBounds(granice);
   // Nie pozwalaj oddalić mapy bardziej niż do całości widocznej na ekranie.
   const zoomCalosci = map.getZoom();
@@ -82,6 +172,8 @@
   const waskiEkran = window.matchMedia("(max-width: 760px)");
   const paramyStartowe = new URLSearchParams(location.hash.slice(1));
   if (waskiEkran.matches && !paramyStartowe.has("z") && !paramyStartowe.has("v")) map.setView(map.getBounds().getCenter(), zoomCalosci + 0.75, { animate: false });
+  ustawMinimape();
+  szerokiEkran.addEventListener("change", ustawMinimape);
 
   // Wszystkie znaczniki w jednej grupie: przy oddaleniu łączą się w klastry z liczbą.
   const grupa = L.markerClusterGroup({
@@ -146,6 +238,12 @@
     }
     if (typeof z.odpowiednik === "string" && z.odpowiednik.trim())
       wiersze.push(el("p", null, el("strong", { textContent: "Prawdziwy odpowiednik: " }), z.odpowiednik.trim()));
+    const g = z.odpowiednikGps;
+    if (Array.isArray(g) && g.length === 2 && Math.abs(g[0]) <= 90 && Math.abs(g[1]) <= 180) // zwykły link, nic nie ładujemy z OSM
+      wiersze.push(el("p", null, el("a", {
+        href: "https://www.openstreetmap.org/?mlat=" + g[0] + "&mlon=" + g[1] + "#map=17/" + g[0] + "/" + g[1],
+        target: "_blank", rel: "noopener noreferrer", textContent: "Zobacz prawdziwe miejsce (OpenStreetMap)"
+      })));
     return wiersze.length ? el("div", { className: "popup__dowod" }, ...wiersze) : null;
   }
 
