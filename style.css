@@ -369,3 +369,88 @@ nav a { display: inline-flex; align-items: center; min-height: 44px; }
   nav { font-size: .88rem; }
   .logo { font-size: 1.15rem; }
 }
+
+/* ==========================================================================
+   Runda 8: tło stron tekstowych, hero, karty, liczby, fakty, tabele
+   (tylko body:not(.strona-mapy) – mapa bez tła i bez dodatkowych stylów)
+   Kontrasty (WCAG, wyliczone):
+   - main: rgba(18,16,28,.72) na najjaśniejszym kolorze tlo.svg (#7d2a5a);
+     tekst #f1eef8 14,2:1; --tekst-2 #b9b3d1 8,1:1; akcent #ff5fa2 5,8:1 (na czystym --tlo 6,6:1).
+   - hero: najjaśniejsze możliwe tło pod gradientem to biel; w dolnej części gradient ma alfa >= .85
+     (rgb 10,8,18) => najjaśniejsze tło #2f2d36: biały tekst 13,5:1, #f1eef8 11,8:1 (wymóg 4,5:1).
+   - .grafika-uwaga: #b9b3d1 na panelu main 8,1:1.
+   ========================================================================== */
+body:not(.strona-mapy) {
+  background: var(--tlo) url("img/tlo.svg") no-repeat center top;
+  background-size: 100% auto;
+}
+@media (max-width: 600px) { body:not(.strona-mapy) { background-size: auto 700px; } }
+body:not(.strona-mapy) main {
+  background: rgba(18, 16, 28, .72);
+  border: 1px solid var(--linia);
+  border-radius: var(--promien);
+  margin: 16px auto;
+  max-width: 852px;
+  padding: 20px 24px;
+}
+@media (max-width: 600px) { body:not(.strona-mapy) main { margin: 8px; padding: 14px; } }
+body:not(.strona-mapy) main h2 { padding-bottom: .3em; border-bottom: 2px solid; border-image: linear-gradient(90deg, var(--akcent), var(--akcent-2) 40%, transparent) 1; }
+body:not(.strona-mapy) main a { text-underline-offset: 2px; }
+
+/* Hero */
+.hero { position: relative; margin: 0 0 1.2em; border-radius: var(--promien); overflow: hidden; background: var(--panel); }
+.hero__img { display: block; width: 100%; aspect-ratio: 1200 / 420; object-fit: cover; }
+.hero::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(10,8,18,0) 20%, rgba(10,8,18,.6) 50%, rgba(10,8,18,.88) 75%, rgba(10,8,18,.92)); }
+.hero__tresc { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; padding: 16px 20px; color: #fff; }
+.hero__tresc h1 { margin: 0 0 .2em; font-size: clamp(1.5rem, 4.5vw, 2.4rem); color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.9), 0 0 12px rgba(0,0,0,.7); }
+.hero__lead { margin: 0; color: #f1eef8; text-shadow: 0 1px 3px rgba(0,0,0,.9); }
+@media (max-width: 600px) {
+  .hero__img { aspect-ratio: 375 / 230; }
+  .hero__tresc { padding: 12px 14px; }
+  .hero__lead { font-size: .9rem; line-height: 1.4; }
+}
+
+.grafika-uwaga { font-size: .78rem; color: var(--tekst-2); margin: -.6em 0 1.2em; }
+
+/* Bloki liczbowe */
+.liczby { list-style: none; margin: 1.2em 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+@media (min-width: 700px) { .liczby { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); } }
+.liczba { background: rgba(38, 34, 56, .6); border: 1px solid var(--linia); border-radius: var(--promien); padding: 12px 14px; display: flex; flex-direction: column; }
+.liczba strong { font-size: 1.9rem; line-height: 1.15; color: var(--akcent); }
+.liczba span { font-size: .88rem; color: var(--tekst-2); }
+
+/* Szybkie fakty */
+.fakty { background: rgba(29, 26, 44, .8); border: 1px solid var(--linia); border-left: 4px solid var(--akcent); border-radius: var(--promien); padding: 12px 16px; margin: 1.2em 0; }
+body:not(.strona-mapy) main .fakty h2 { margin: 0 0 .4em; font-size: 1.05rem; border: 0; padding: 0; }
+.fakty ul { list-style: none; margin: 0; padding: 0; font-size: .95rem; }
+.fakty li { position: relative; padding: 3px 0 3px 16px; }
+.fakty li::before { content: ""; position: absolute; left: 2px; top: .85em; width: 6px; height: 6px; border-radius: 50%; background: var(--akcent-2); }
+
+/* Karty */
+.karty { list-style: none; margin: 1.2em 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 600px) { .karty { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; } }
+.karty li { margin: 0; display: flex; }
+.karta { display: flex; flex-direction: column; width: 100%; color: var(--tekst); text-decoration: none; background: var(--panel); border: 1px solid var(--linia); border-radius: var(--promien); overflow: hidden; transition: border-color .15s; }
+.karta:hover, .karta:focus-visible { border-color: var(--akcent); color: var(--tekst); }
+.karta__img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
+.karta__tytul { display: block; padding: 10px 12px 2px; font-weight: 700; line-height: 1.3; }
+.karta__opis { display: block; padding: 0 12px 12px; font-size: .88rem; color: var(--tekst-2); line-height: 1.4; }
+.karta:not(:has(.karta__img)) { border-top: 3px solid var(--akcent); }
+.karta:not(:has(.karta__img)) .karta__tytul { padding-top: 12px; }
+.karty--kompakt { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.karty--kompakt .karta__img, .karty--kompakt .karta__opis { display: none; }
+.karty--kompakt .karta__tytul { padding: 10px 30px 10px 12px; position: relative; }
+.karty--kompakt .karta__tytul::after { content: "\2192"; position: absolute; right: 12px; color: var(--akcent); }
+
+/* Przewijane tabele */
+.tabela-wrap { overflow-x: auto; margin: 1em 0; border-radius: var(--promien);
+  background:
+    linear-gradient(to right, #12101c 30%, rgba(18,16,28,0)) left center / 30px 100% no-repeat local,
+    linear-gradient(to left, #12101c 30%, rgba(18,16,28,0)) right center / 30px 100% no-repeat local,
+    linear-gradient(to right, rgba(0,0,0,.55), rgba(0,0,0,0)) left center / 14px 100% no-repeat scroll,
+    linear-gradient(to left, rgba(0,0,0,.55), rgba(0,0,0,0)) right center / 14px 100% no-repeat scroll; }
+.tabela-wrap:focus-visible { outline: 2px solid var(--akcent); outline-offset: 2px; }
+.tabela-wrap table { margin: 0; min-width: 520px; }
+
+@media (prefers-reduced-motion: reduce) { .karta { transition: none; } }
