@@ -68,7 +68,10 @@
     maxZoom: 3,
     maxBounds: [[-MAPA.wysokosc * 0.25, -MAPA.szerokosc * 0.25], [MAPA.wysokosc * 1.25, MAPA.szerokosc * 1.25]],
     zoomSnap: 0.25,
-    attributionControl: true
+    attributionControl: true,
+    // Wtyczka leaflet.fullscreen (MIT): przycisk w pasku zoomu, native Fullscreen API (Esc zamyka), role=button i aria-label od wtyczki.
+    fullscreenControl: !!(window.L && L.Control && L.Control.FullScreen),
+    fullscreenControlOptions: { title: "Pełny ekran", titleCancel: "Zamknij pełny ekran" }
   });
   map.attributionControl.setPrefix(false).addAttribution(
     'Mapa, kafelki i punkty: <a href="https://map.gtadb.org" target="_blank" rel="noopener">GTADB</a> / Yanis V17, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> (zmieniono: przycięcie)'
@@ -102,7 +105,7 @@
     return obrazyKafelkow.get(url);
   }
   const WarstwaKafelkow = L.GridLayer.extend({
-    options: { tileSize: 256, bounds: L.latLngBounds(granice), maxNativeZoom: 2, keepBuffer: 1, updateWhenZooming: false, pane: "tilePane", attribution: "" },
+    options: { tileSize: 256, bounds: L.latLngBounds(granice), minZoom: -6, maxNativeZoom: 2, keepBuffer: 1, updateWhenZooming: false, pane: "tilePane", attribution: "" },
     createTile(coords, gotowe) {
       const dpr = Math.min(window.devicePixelRatio || 1, 2), bok = this.options.tileSize;
       const plotno = document.createElement("canvas");
@@ -134,6 +137,33 @@
     }
   });
   new WarstwaKafelkow().addTo(map);
+
+  // Minimapa (Leaflet-MiniMap, BSD-2-Clause): mały podgląd całej mapy z ramką bieżącego widoku; kliknięcie przesuwa mapę.
+  // Tylko na szerokich ekranach (>900 px; na telefonie i małym tablecie zasłaniałaby mapę); obraz img/podglad-mapy.webp (320 px) jest wygenerowany z mapa.webp.
+  const MINIMAPA_SZER = 150;
+  const szerokiEkran = window.matchMedia("(min-width: 901px)");
+  let minimapa = null;
+  function ustawMinimape() {
+    if (!(window.L && L.Control && L.Control.MiniMap)) return;
+    if (!szerokiEkran.matches) { if (minimapa) { map.removeControl(minimapa); minimapa = null; } return; }
+    if (minimapa) return;
+    minimapa = new L.Control.MiniMap(L.imageOverlay("/img/podglad-mapy.webp", granice), {
+      position: "bottomright", toggleDisplay: true, collapsedWidth: 28, collapsedHeight: 28, width: MINIMAPA_SZER, height: Math.round(MINIMAPA_SZER * MAPA.wysokosc / MAPA.szerokosc),
+      zoomLevelFixed: Math.log2(MINIMAPA_SZER / MAPA.szerokosc), centerFixed: [MAPA.wysokosc / 2, MAPA.szerokosc / 2],
+      aimingRectOptions: { color: "#4fc3f7", weight: 2 }, shadowRectOptions: { color: "#4fc3f7", weight: 1 },
+      strings: { hideText: "Ukryj minimapę", showText: "Pokaż minimapę" },
+      mapOptions: { zoomSnap: 0, minZoom: -8, maxZoom: 0, keyboard: false }
+    }).addTo(map);
+    const kontener = minimapa.getContainer();
+    kontener.setAttribute("role", "region");
+    kontener.setAttribute("aria-label", "Minimapa: przegląd całej mapy");
+    const przycisk = minimapa._toggleDisplayButton;
+    przycisk.setAttribute("role", "button");
+    const opisz = (zwinieta) => { przycisk.setAttribute("aria-label", zwinieta ? "Pokaż minimapę" : "Ukryj minimapę"); przycisk.setAttribute("aria-expanded", String(!zwinieta)); };
+    opisz(false);
+    minimapa.on("toggle", (e) => opisz(e.minimized));
+    minimapa._miniMap.on("click", (e) => map.panTo(e.latlng)); // centerFixed wyłącza przeciąganie minimapy, więc klik = skok na mapie głównej
+  }
   map.fitBounds(granice);
   // Nie pozwalaj oddalić mapy bardziej niż do całości widocznej na ekranie.
   const zoomCalosci = map.getZoom();
@@ -142,6 +172,8 @@
   const waskiEkran = window.matchMedia("(max-width: 760px)");
   const paramyStartowe = new URLSearchParams(location.hash.slice(1));
   if (waskiEkran.matches && !paramyStartowe.has("z") && !paramyStartowe.has("v")) map.setView(map.getBounds().getCenter(), zoomCalosci + 0.75, { animate: false });
+  ustawMinimape();
+  szerokiEkran.addEventListener("change", ustawMinimape);
 
   // Wszystkie znaczniki w jednej grupie: przy oddaleniu łączą się w klastry z liczbą.
   const grupa = L.markerClusterGroup({

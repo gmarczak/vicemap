@@ -1,6 +1,6 @@
 // Tryb offline: strony i znaczniki najpierw z sieci (zawsze świeże), reszta z pamięci podręcznej.
 // Po zmianie listy plików poniżej podbij numer wersji.
-const WERSJA = "vicemap-v10";
+const WERSJA = "vicemap-v11";
 // Bez tych plików instalacja SW się nie uda (mapa i jej zależności).
 const PODSTAWOWE = [
   "/",
@@ -15,11 +15,15 @@ const PODSTAWOWE = [
   "/vendor/leaflet/leaflet.css",
   "/vendor/leaflet.markercluster-1.5.3/leaflet.markercluster.js",
   "/vendor/leaflet.markercluster-1.5.3/MarkerCluster.css",
+  "/vendor/leaflet.fullscreen-5.3.3/Control.FullScreen.umd.js",
+  "/vendor/leaflet.fullscreen-5.3.3/Control.FullScreen.css",
+  "/vendor/leaflet-minimap-3.6.1/Control.MiniMap.min.js",
+  "/vendor/leaflet-minimap-3.6.1/Control.MiniMap.min.css",
   "/img/ikona.svg"
 ];
 // Dodatki: błąd pobrania jednego z nich nie blokuje instalacji.
 const DODATKOWE = [
-  "/404.html", "/o-projekcie.html", "/kategorie/", "/dziennik-zmian.html", "/data/regiony.json", "/poradniki/", "/zglos.html", "/js/zglos.js", "/js/mini-mapa.js", "/manifest.webmanifest",
+  "/404.html", "/o-projekcie.html", "/kategorie/", "/dziennik-zmian.html", "/data/regiony.json", "/poradniki/", "/zglos.html", "/js/zglos.js", "/js/mini-mapa.js", "/manifest.webmanifest", "/img/podglad-mapy.webp", "/vendor/leaflet-minimap-3.6.1/images/toggle.svg",
   "/vendor/leaflet/images/layers.png", "/vendor/leaflet/images/layers-2x.png",
   "/vendor/leaflet/images/marker-icon.png", "/vendor/leaflet/images/marker-icon-2x.png", "/vendor/leaflet/images/marker-shadow.png"
 ];
