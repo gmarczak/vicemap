@@ -1,6 +1,6 @@
 // Tryb offline: strony i znaczniki najpierw z sieci (zawsze świeże), reszta z pamięci podręcznej.
 // Po zmianie listy plików poniżej podbij numer wersji.
-const WERSJA = "vicemap-v9";
+const WERSJA = "vicemap-v10";
 // Bez tych plików instalacja SW się nie uda (mapa i jej zależności).
 const PODSTAWOWE = [
   "/",
@@ -19,7 +19,7 @@ const PODSTAWOWE = [
 ];
 // Dodatki: błąd pobrania jednego z nich nie blokuje instalacji.
 const DODATKOWE = [
-  "/404.html", "/data/regiony.json", "/poradniki/", "/zglos.html", "/js/zglos.js", "/js/mini-mapa.js", "/manifest.webmanifest",
+  "/404.html", "/o-projekcie.html", "/kategorie/", "/dziennik-zmian.html", "/data/regiony.json", "/poradniki/", "/zglos.html", "/js/zglos.js", "/js/mini-mapa.js", "/manifest.webmanifest",
   "/vendor/leaflet/images/layers.png", "/vendor/leaflet/images/layers-2x.png",
   "/vendor/leaflet/images/marker-icon.png", "/vendor/leaflet/images/marker-icon-2x.png", "/vendor/leaflet/images/marker-shadow.png"
 ];

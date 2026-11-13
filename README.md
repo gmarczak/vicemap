@@ -19,13 +19,16 @@ i otwórz http://localhost:3000.
 | `index.html` | Strona z mapą |
 | `data/kategorie.json` | Kategorie: nazwa, kolor, litera na pinezce, `spoiler: true` = domyślnie ukryta, `bezStron: true` = bez własnych stron w Google |
 | `data/znaczniki.json` | Wszystkie znaczniki na mapie |
-| `data/regiony.json` | Sześć regionów Leonidy: `id`, `nazwa`, `x`, `y`, `zrodlo` (skąd wzięto środek). Podstawa linków `#v=x,y,zoom` w poradniku o regionach |
+| `data/regiony.json` | Sześć regionów Leonidy: `id`, `nazwa`, `x`, `y`, `zrodlo` (skąd wzięto środek), `opis` (krótki, z rockstargames.com/VI) i `dopasuj` (człony pola `region` znaczników, które należą do regionu; puste = brak punktów). Podstawa linków `#v=x,y,zoom` w poradniku o regionach |
 | `js/config.js` | Ustawienia: obraz mapy, Supabase, AdSense, wsparcie, linki partnerskie |
 | `js/map.js` | Mapa: filtry, grupowanie, wyszukiwarka, tracker postępu, ulubione, prywatne notatki, eksport/import postępu, linki `#z=id` i `#v=x,y,zoom`, tryb edytora |
 | `js/strona.js` | Wspólne dla wszystkich stron: baner zgód, reklamy po zgodzie, linki partnerskie |
 | `js/zglos.js`, `zglos.html` | Formularz zgłoszeń znaczników |
 | `poradniki/` | Poradniki (pisane ręcznie) |
-| `scripts/build.mjs` | Generuje `znaczniki/*.html`, `kategorie/*.html` i `sitemap.xml` z danych |
+| `data/zmiany.json` | Dziennik zmian: `[{data, tytul, opis}]`, najnowsze na górze; build waliduje i generuje `dziennik-zmian.html` |
+| `o-projekcie.html` | Strona „O projekcie i źródłach danych” (ręczna) |
+| `scripts/build.mjs` | Generuje `znaczniki/*.html`, `kategorie/*.html` (od 5 punktów, plus spis `kategorie/`), `regiony/*.html` (noindex poniżej 5 punktów), `dziennik-zmian.html`, sekcję na stronie głównej (między `<!-- BUILD:glowna -->`) i `sitemap.xml` |
+| `scripts/sprawdz-linki.mjs` | Sprawdza linki wewnętrzne, fragmenty `#id` i zgodność sitemap ze stronami |
 | `supabase/zgloszenia.sql` | Tabela na zgłoszenia |
 | `sw.js`, `manifest.webmanifest` | Tryb offline i „Dodaj do ekranu głównego” |
 
