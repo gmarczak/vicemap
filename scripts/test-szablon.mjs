@@ -25,6 +25,7 @@ const znaczniki = [
   z("test-kryjowka-1", "kryjowki", "Kryjówka testowa jeden", 1000, 1000),
   z("test-kryjowka-2", "kryjowki", "Kryjówka testowa dwa z bardzo długą nazwą, która nie mieści się w tytule", 1100, 1050, dlugi),
   z("test-kryjowka-3", "kryjowki", "Kryjówka testowa trzy", 1500, 1500),
+  z("test-kryjowka-4", "kryjowki", "Kryjówka testowa cztery", 1600, 1600),
   z("test-sklep-1", "sklepy", "Sklep testowy", 1020, 1010),
   z("test-sklep-2", "sklepy", "Drugi sklep testowy", 2000, 2000),
   z("test-bron-1", "bron", "Sklep z bronią testowy", 1200, 1200),
@@ -38,10 +39,12 @@ const znaczniki = [
 ];
 znaczniki.find((m) => m.id === "test-przyklad").przyklad = true;
 Object.assign(znaczniki.find((m) => m.id === "test-gtadb"), { zrodlo: "gtadb", odpowiednik: 'Ocean <b>Drive</b> & "Co", Miami' });
-const regiony = [{ id: "test-region", nazwa: "Region testowy", x: 100, y: 100, zrodlo: "test" }];
+const regiony = [{ id: "test-region", nazwa: "Region testowy", x: 100, y: 100, zrodlo: "test", opis: "Zmyślony region testowy.", dopasuj: ["Test County"] }, { id: "test-pusty", nazwa: "Region pusty", x: 200, y: 200, zrodlo: "test", opis: "Zmyślony region bez punktów.", dopasuj: [] }];
+const zmiany = [{ data: "2026-11-13", tytul: "Nowszy wpis testowy", opis: "Zmyślony wpis dziennika zmian, tylko na potrzeby testu szablonu." }, { data: "2026-11-12", tytul: "Starszy wpis testowy", opis: "Drugi zmyślony wpis dziennika zmian, tylko na potrzeby testu szablonu." }];
 await writeFile(join(dane, "kategorie.json"), JSON.stringify(kat, null, 1));
 await writeFile(join(dane, "znaczniki.json"), JSON.stringify(znaczniki, null, 1));
 await writeFile(join(dane, "regiony.json"), JSON.stringify(regiony));
+await writeFile(join(dane, "zmiany.json"), JSON.stringify(zmiany));
 
 const uruchom = () => spawnSync(process.execPath, [BUILD], { encoding: "utf8", env: { ...process.env, VICEMAP_DANE: dane, VICEMAP_WYJSCIE: wyj } });
 let porazki = 0;
@@ -51,10 +54,12 @@ const r = uruchom();
 ok(r.status === 0, "build na poprawnych danych: " + r.stderr);
 if (r.status !== 0) { console.error(r.stderr); process.exit(1); }
 const pZn = await readdir(join(wyj, "znaczniki")), pKat = await readdir(join(wyj, "kategorie"));
-const pliki = [...pZn.map((p) => "znaczniki/" + p), ...pKat.map((p) => "kategorie/" + p)];
+const pReg = await readdir(join(wyj, "regiony"));
+const pliki = [...pZn.map((p) => "znaczniki/" + p), ...pKat.map((p) => "kategorie/" + p), ...pReg.map((p) => "regiony/" + p), "dziennik-zmian.html"];
 const spoilery = new Set(kat.filter((k) => k.spoiler).map((k) => k.id));
 const publ = znaczniki.filter((m) => !m.przyklad && !spoilery.has(m.kategoria));
-const oczekKat = new Set(publ.map((m) => m.kategoria)).size;
+const MIN = 5; // zgodnie z MIN_STRONA w build.mjs
+const oczekKat = new Set(publ.map((m) => m.kategoria).filter((id) => publ.filter((m) => m.kategoria === id).length >= MIN)).size + 1; // + kategorie/index.html
 ok(pZn.length === publ.length && pKat.length === oczekKat && !pZn.includes("test-przyklad.html"), `liczba stron (${pZn.length} znaczników, oczekiwano ${publ.length}; ${pKat.length} kategorii, oczekiwano ${oczekKat}) lub strona przykładu`);
 
 const sprawdz = async (rel) => {
@@ -65,7 +70,7 @@ const sprawdz = async (rel) => {
   ok(tytul && tytul.length <= 60, `${rel}: title ${tytul.length} znaków: ${tytul}`);
   ok(opis && opis.length <= 160, `${rel}: description ${opis.length} znaków`);
   ok(!/…\.|\.\.\.|……/.test(opis + html), `${rel}: przycięty tekst z "…."`);
-  ok(html.includes(`<link rel="canonical" href="https://vicemap.pl/${rel}">`), `${rel}: canonical`);
+  ok(html.includes(`<link rel="canonical" href="https://vicemap.pl/${rel.replace(/index\.html$/, "")}">`), `${rel}: canonical`);
   ok(html.includes("map.gtadb.org") && html.includes("CC BY 4.0"), `${rel}: atrybucja GTADB w stopce`);
   ok(/<h1>/.test(html) && /class="okruszki"/.test(html), `${rel}: h1 / okruszki`);
   const ld = /<script type="application\/ld\+json">(.*?)<\/script>/s.exec(html)?.[1];
@@ -88,6 +93,22 @@ ok(s2.includes("Test County"), "pokrewne w regionie (sklep)");
 const kk = await readFile(join(wyj, "kategorie/kryjowki.html"), "utf8");
 ok(kk.includes("<table>") && kk.includes('href="/znaczniki/test-kryjowka-3.html"'), "lista na stronie kategorii");
 ok(existsSync(join(wyj, "kategorie/orientacyjne.html")), "kategoria orientacyjne (bez bezStron) ma stronę");
+ok(!existsSync(join(wyj, "kategorie/bron.html")), "kategoria z mniej niż 5 punktami nie ma strony");
+ok(kk.includes('href="/#k=kryjowki"') && kk.includes("niepotwierdzone"), "strona kategorii: link do mapy z filtrem i ostrzeżenie o pewności");
+ok(/<script type="application\/ld\+json">[^<]*"ItemList"/.test(kk), "strona kategorii: ItemList w JSON-LD");
+const spis = await readFile(join(wyj, "kategorie/index.html"), "utf8");
+ok(spis.includes('href="/kategorie/kryjowki.html"') && !spis.includes('href="/kategorie/bron.html"') && spis.includes('href="/#k=bron"'), "spis kategorii: linki do stron i do mapy dla małych kategorii");
+
+// Regiony: strona z punktami jest indeksowana, pusta ma noindex; dziennik zmian; sitemap
+const rg = await readFile(join(wyj, "regiony/test-region.html"), "utf8");
+ok(!rg.includes("noindex") && rg.includes('href="/#v=100,100,1"') && rg.includes("<table>") && rg.includes("Test County"), "strona regionu z punktami");
+const rp = await readFile(join(wyj, "regiony/test-pusty.html"), "utf8");
+ok(rp.includes('content="noindex,follow"') && !rp.includes("<table>"), "pusty region: noindex i brak tabeli");
+const dz = await readFile(join(wyj, "dziennik-zmian.html"), "utf8");
+ok(dz.indexOf("Nowszy wpis testowy") > 0 && dz.indexOf("Nowszy wpis testowy") < dz.indexOf("Starszy wpis testowy") && dz.includes('datetime="2026-11-13"'), "dziennik zmian: kolejność i data");
+const mapa = await readFile(join(wyj, "sitemap.xml"), "utf8");
+ok(mapa.includes("/regiony/test-region.html") && !mapa.includes("/regiony/test-pusty.html") && mapa.includes("/kategorie/</loc>") && mapa.includes("/dziennik-zmian.html"), "sitemap: regiony z punktami, spis kategorii, dziennik; bez pustego regionu");
+for (const p of ["kategorie/index.html", "dziennik-zmian.html"]) ok(/href="\/o-projekcie\.html">O projekcie i źródłach danych/.test(await readFile(join(wyj, p), "utf8")), p + ": stopka z linkiem O projekcie");
 
 // (d) Pewność i odpowiednik na stronie znacznika (escapowane); zwykły znacznik bez tych linii
 const sg = await readFile(join(wyj, "znaczniki/test-gtadb.html"), "utf8");
@@ -124,6 +145,14 @@ const rb = uruchom();
 ok(rb.status !== 0, "złe pola odpowiednik/zrodlo/region powinny zatrzymać build");
 ok((rb.stderr.match(/"odpowiednik" musi być/g) || []).length === 3, "odpowiednik: oczekiwano 3 błędów (pusty, za długi, nie tekst)");
 ok(rb.stderr.includes('nieznane "zrodlo"') && rb.stderr.includes('"region" musi być tekstem') && !rb.stderr.includes(`pozycja 6 ("o-ok")`), "zrodlo/region: komunikaty lub fałszywy błąd dla poprawnego wpisu");
+
+// zmiany.json: walidacja
+await writeFile(join(dane, "znaczniki.json"), JSON.stringify([dobry]));
+const zleZm = [{ data: "2026-11-01", tytul: "Starszy", opis: "Opis wystarczająco długi, żeby przejść walidację długości." }, { data: "2026-11-05", tytul: "Nowszy po starszym", opis: "krótki" }, { data: "2026-13-45", tytul: "Zła data", opis: "Opis wystarczająco długi, żeby przejść walidację długości." }];
+await writeFile(join(dane, "zmiany.json"), JSON.stringify(zleZm));
+const rzm = uruchom();
+ok(rzm.status !== 0 && rzm.stderr.includes("poprawną datą") && rzm.stderr.includes("od najnowszego") && rzm.stderr.includes('"opis" ma mieć'), "zmiany.json: walidacja daty, kolejności i opisu");
+await writeFile(join(dane, "zmiany.json"), JSON.stringify(zmiany));
 
 // (c) regiony.json
 await writeFile(join(dane, "znaczniki.json"), JSON.stringify([dobry]));
