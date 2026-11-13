@@ -6,7 +6,9 @@
   <title>Zgłoś znacznik na mapie GTA 6 | ViceMap</title>
   <meta name="description" content="Znalazłeś w GTA 6 miejsce, którego nie ma na mapie, albo błąd w opisie? Zgłoś je – sprawdzimy i dodamy na mapę ViceMap.">
   <link rel="canonical" href="https://vicemap.pl/zglos.html">
-  <meta property="og:type" content="article">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pl_PL">
+  <meta name="twitter:card" content="summary_large_image">
   <meta property="og:site_name" content="ViceMap">
   <meta property="og:title" content="Zgłoś znacznik na mapie GTA 6 | ViceMap">
   <meta property="og:description" content="Znalazłeś w GTA 6 miejsce, którego nie ma na mapie, albo błąd w opisie? Zgłoś je – sprawdzimy i dodamy na mapę ViceMap.">
@@ -17,18 +19,20 @@
   <link rel="apple-touch-icon" href="/img/ikona-180.png">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="stylesheet" href="/style.css">
+  <style>.pomin-nawigacje{position:absolute;left:8px;top:-60px;z-index:1000;padding:8px 14px;background:#fff;color:#12101c;font-weight:600;border-radius:6px}.pomin-nawigacje:focus{top:8px}</style>
 </head>
 <body>
+  <a class="pomin-nawigacje" href="#tresc">Przejdź do treści</a>
   <header class="naglowek">
     <a class="logo" href="/">Vice<span>Map</span></a>
-    <nav>
+    <nav aria-label="Główna">
       <a href="/">Mapa</a>
       <a href="/poradniki/">Poradniki</a>
       <a href="/zglos.html" aria-current="page">Zgłoś</a>
     </nav>
   </header>
 
-  <main>
+  <main id="tresc" tabindex="-1">
     <h1>Zgłoś znacznik</h1>
     <p>Znalazłeś w grze coś, czego nie ma na mapie, albo widzisz błąd? Opisz to – sprawdzimy i dodamy. Nie wysyłaj spoilerów fabuły w opisie.</p>
 
@@ -87,8 +91,8 @@
     </p>
   </footer>
 
-  <script src="/js/config.js"></script>
-  <script src="/js/zglos.js"></script>
-  <script src="/js/strona.js"></script>
+  <script src="/js/config.js" defer></script>
+  <script src="/js/zglos.js" defer></script>
+  <script src="/js/strona.js" defer></script>
 </body>
 </html>
