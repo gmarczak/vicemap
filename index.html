@@ -31,7 +31,7 @@
 <body class="strona-mapy">
   <header class="naglowek">
     <a class="logo" href="/">Vice<span>Map</span></a>
-    <nav>
+    <nav aria-label="Główna nawigacja">
       <a href="/" aria-current="page">Mapa</a>
       <a href="/poradniki/">Poradniki</a>
       <a href="/zglos.html">Zgłoś</a>
@@ -41,8 +41,8 @@
   <div class="uklad-mapy">
     <aside id="panel" class="panel" aria-label="Filtry i wyszukiwarka">
       <label class="ukryta-etykieta" for="szukaj">Szukaj na mapie</label>
-      <input id="szukaj" class="szukaj" type="search" placeholder="Szukaj: kryjówka, sklep, broń…" autocomplete="off">
-      <ul id="wyniki" class="wyniki" aria-live="polite"></ul>
+      <input id="szukaj" class="szukaj" type="search" enterkeyhint="search" aria-controls="wyniki" placeholder="Szukaj: kryjówka, sklep, broń…" autocomplete="off">
+      <ul id="wyniki" class="wyniki" aria-label="Wyniki wyszukiwania" aria-live="polite"></ul>
 
       <div id="postep" class="postep">
         <div class="postep__tekst">Zaliczone: 0 z 0 (0%)</div>
@@ -50,7 +50,7 @@
       </div>
 
       <h2 class="panel__tytul">Kategorie</h2>
-      <ul id="filtry" class="filtry"></ul>
+      <ul id="filtry" class="filtry" aria-label="Kategorie znaczników"></ul>
       <div class="panel__przyciski">
         <button type="button" id="pokaz-wszystkie" class="przycisk przycisk--maly">Pokaż wszystkie</button>
         <button type="button" id="ukryj-wszystkie" class="przycisk przycisk--maly">Ukryj wszystkie</button>

@@ -196,3 +196,33 @@ textarea { min-height: 120px; resize: vertical; }
   font-size: .65rem; color: #b9b4d4; text-shadow: 0 0 3px #0b0a12, 0 0 3px #0b0a12;
 }
 .leaflet-container .leaflet-control-attribution a { color: inherit; text-decoration: underline; }
+
+/* --- Mobile i dostępność --- */
+.leaflet-marker-icon.pin-wrap, .leaflet-div-icon { background: none; border: 0; }
+.leaflet-marker-icon > .pin { margin: 7px; }
+.leaflet-marker-icon:focus-visible { outline: 2px solid var(--akcent-2); outline-offset: -4px; border-radius: 50%; }
+.panel { overscroll-behavior: contain; }
+.filtr, .przelacznik, .wyniki button { min-height: 44px; }
+.filtr input, .przelacznik input, .popup__zaliczone input { width: 22px; height: 22px; flex: none; accent-color: var(--akcent); }
+.popup__zaliczone { min-height: 44px; }
+.leaflet-bar a { width: 44px; height: 44px; line-height: 44px; }
+.leaflet-touch .leaflet-bar a { width: 44px; height: 44px; line-height: 44px; }
+.leaflet-container a.leaflet-popup-close-button { width: 44px; height: 44px; font-size: 24px; line-height: 44px; text-align: center; padding: 0; }
+.leaflet-popup-content { max-width: calc(100vw - 96px); overflow-wrap: anywhere; }
+.przycisk--maly { min-height: 44px; padding: 6px 14px; }
+.przycisk { min-height: 44px; }
+.link-przycisk { min-height: 44px; padding: 0 4px; }
+nav a { display: inline-flex; align-items: center; min-height: 44px; }
+.logo { display: inline-flex; align-items: center; min-height: 44px; }
+
+@media (max-width: 760px) {
+  .panel { max-height: 70%; }
+  .przelacz-panel { min-height: 48px; padding: 8px 22px; }
+  .leaflet-control-attribution { max-width: 60vw; }
+  .leaflet-bottom.leaflet-right { margin-bottom: 72px; } /* nad przyciskiem szuflady */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  .leaflet-zoom-anim .leaflet-zoom-animated { transition: none !important; }
+}
