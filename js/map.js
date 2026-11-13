@@ -39,7 +39,7 @@
   const granice = [[0, 0], [MAPA.wysokosc, MAPA.szerokosc]];
   const map = L.map("map", {
     crs: L.CRS.Simple,
-    minZoom: -2,
+    minZoom: -4, // zawężane niżej do dopasowania mapy do ekranu
     maxZoom: 3,
     maxBounds: [[-MAPA.wysokosc * 0.25, -MAPA.szerokosc * 0.25], [MAPA.wysokosc * 1.25, MAPA.szerokosc * 1.25]],
     zoomSnap: 0.25,
@@ -50,14 +50,20 @@
   );
   L.imageOverlay(MAPA.obraz, granice).addTo(map);
   map.fitBounds(granice);
+  // Nie pozwalaj oddalić mapy bardziej niż do całości widocznej na ekranie.
+  const zoomCalosci = map.getZoom();
+  map.setMinZoom(Math.min(-2, zoomCalosci));
+  // Telefon: start trochę bliżej, żeby znaczniki nie były mikroskopijne.
+  const waskiEkran = window.matchMedia("(max-width: 760px)");
+  if (waskiEkran.matches && !location.hash.startsWith("#z=")) map.setView(map.getBounds().getCenter(), zoomCalosci + 0.75, { animate: false });
 
   function ikona(kat, zrobione) {
     return L.divIcon({
       className: "",
       html: `<span class="pin${zrobione ? " pin--zaliczone" : ""}" style="--kolor:${kat.kolor}">${zrobione ? "✓" : kat.znak}</span>`,
-      iconSize: [30, 30],
-      iconAnchor: [15, 15],
-      popupAnchor: [0, -14]
+      iconSize: [44, 44], // pole dotyku 44px, sam pin ma 30px
+      iconAnchor: [22, 22],
+      popupAnchor: [0, -18]
     });
   }
 
@@ -128,6 +134,17 @@
     panel.classList.remove("panel--otwarty");
     przyciskPanelu.setAttribute("aria-expanded", "false");
     przyciskPanelu.textContent = "Filtry i szukaj";
+    ustawInert();
+  }
+  // Zamknięta szuflada na telefonie jest poza kolejnością tabulatora i czytnikiem ekranu.
+  function ustawInert() {
+    panel.inert = waskiEkran.matches && !panel.classList.contains("panel--otwarty");
+  }
+  function otworzPanel() {
+    panel.classList.add("panel--otwarty");
+    przyciskPanelu.setAttribute("aria-expanded", "true");
+    przyciskPanelu.textContent = "Pokaż mapę";
+    ustawInert();
   }
 
   function zbudujFiltry() {
@@ -187,13 +204,15 @@
     });
     przyciskPanelu.addEventListener("click", () => {
       if (panel.classList.contains("panel--otwarty")) zamknijPanel();
-      else {
-        panel.classList.add("panel--otwarty");
-        przyciskPanelu.setAttribute("aria-expanded", "true");
-        przyciskPanelu.textContent = "Pokaż mapę";
-      }
+      else otworzPanel();
     });
     map.on("click", zamknijPanel);
+    map.on("popupopen", () => { if (waskiEkran.matches) zamknijPanel(); });
+    waskiEkran.addEventListener("change", ustawInert);
+    ustawInert();
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && panel.classList.contains("panel--otwarty")) { zamknijPanel(); przyciskPanelu.focus(); }
+    });
   }
 
   function pokazZnacznik(id) {
@@ -301,7 +320,7 @@
         if (!k) { console.warn("Nieznana kategoria znacznika", z); continue; }
         const marker = L.marker([z.y, z.x], { icon: ikona(k, zaliczone.has(z.id)), title: z.nazwa, alt: z.nazwa });
         marker.vicemapId = z.id;
-        marker.bindPopup(() => trescPopupu(z), { maxWidth: 280 });
+        marker.bindPopup(() => trescPopupu(z), { maxWidth: 260, autoPanPadding: [16, 72] });
         warstwy.get(k.id).addLayer(marker);
         znacznikiPoId.set(z.id, { dane: z, marker });
       }
