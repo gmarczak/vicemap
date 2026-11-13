@@ -140,7 +140,7 @@ textarea { min-height: 120px; resize: vertical; }
   box-shadow: 0 1px 4px rgba(0, 0, 0, .6);
 }
 .pin--maly { width: 22px; height: 22px; font-size: 11px; box-shadow: none; flex: none; }
-.pin--zaliczone { opacity: .55; filter: grayscale(.6); }
+.pin--zaliczone { opacity: .75; filter: grayscale(.6); }
 
 /* --- Dymki Leafleta w ciemnym motywie --- */
 .leaflet-container { font: inherit; background: #0b0a12; }
@@ -185,11 +185,19 @@ textarea { min-height: 120px; resize: vertical; }
 }
 
 /* --- Mała mapa na stronie znacznika --- */
-.mini-mapa { height: 320px; border-radius: var(--promien); border: 1px solid var(--linia); margin: 16px 0; }
+.mini-mapa { height: 260px; border-radius: var(--promien); border: 1px solid var(--linia); margin: 16px 0; background: #0b0a12; }
+@media (max-width: 760px) { .mini-mapa { height: 220px; } }
+
+/* --- Odliczanie, komunikat postępu, input pliku w przycisku --- */
+.odliczanie { margin: 0; font-size: .85rem; color: var(--tekst-2); font-variant-numeric: tabular-nums; }
+.odliczanie:empty { display: none; }
+.komunikat-postepu--blad { color: #ff9aa8; }
+.przycisk:focus-within { outline: 2px solid var(--akcent-2); outline-offset: 2px; }
+@media (max-width: 760px) { .naglowek { flex-wrap: wrap; } .odliczanie { order: 3; flex-basis: 100%; font-size: .8rem; } }
 .leaflet-container .popup a.przycisk { color: var(--tekst); }
 
 /* Atrybucja mapy (CC BY 4.0): sam tekst, bez tła */
-.stopka .atrybucja { font-size: .7rem; opacity: .6; margin: 4px 0; }
+.stopka .atrybucja { font-size: .7rem; opacity: .8; margin: 4px 0; }
 .stopka .atrybucja a { color: inherit; }
 .leaflet-container .leaflet-control-attribution {
   background: none; box-shadow: none; padding: 0 6px;
@@ -226,3 +234,7 @@ nav a { display: inline-flex; align-items: center; min-height: 44px; }
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
   .leaflet-zoom-anim .leaflet-zoom-animated { transition: none !important; }
 }
+
+/* Strona znacznika: poprzedni/następny w kategorii */
+.poprzedni-nastepny { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 1em 0; }
+.poprzedni-nastepny a { display: inline-flex; align-items: center; min-height: 44px; }

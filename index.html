@@ -31,6 +31,7 @@
 <body class="strona-mapy">
   <header class="naglowek">
     <a class="logo" href="/">Vice<span>Map</span></a>
+    <p id="odliczanie" class="odliczanie" aria-live="off"></p>
     <nav aria-label="Główna nawigacja">
       <a href="/" aria-current="page">Mapa</a>
       <a href="/poradniki/">Poradniki</a>
@@ -57,6 +58,12 @@
       </div>
       <label class="przelacznik"><input type="checkbox" id="ukryj-zaliczone"> Ukryj zaliczone</label>
       <p class="panel__uwaga">Postęp zapisuje się w tej przeglądarce. Kategoria „Misje fabularne” jest domyślnie ukryta, żeby nie zdradzać fabuły.</p>
+      <div class="panel__przyciski">
+        <button type="button" id="kopiuj-widok" class="przycisk przycisk--maly">Kopiuj link do widoku</button>
+        <button type="button" id="pobierz-postep" class="przycisk przycisk--maly">Pobierz postęp</button>
+        <label class="przycisk przycisk--maly">Wczytaj postęp<input type="file" id="wczytaj-postep" class="ukryta-etykieta" accept="application/json,.json"></label>
+      </div>
+      <p id="komunikat-postepu" class="panel__uwaga" role="status"></p>
       <button type="button" id="resetuj-postep" class="link-przycisk">Wyczyść postęp</button>
     </aside>
 
