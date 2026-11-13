@@ -3,6 +3,18 @@
 Stan na 13.11.2026. Premiera GTA 6: **19.11.2026** (wg `poradniki/premiera.html`).
 Strona ma już: mapę z filtrami, wyszukiwarką i trackerem, zgłoszenia znaczników, 7 poradników, SEO (canonical, OG, sitemap), PWA, build i konfigurację Vercela. Opis techniczny jest w [README.md](README.md) – ten plik mówi tylko, **co zostało do zrobienia**.
 
+## Cel projektu
+
+**Najlepsza polskojęzyczna interaktywna mapa GTA 6 – rzetelna, szybka i dopracowana na telefonie.**
+
+| Kiedy | Co ma być prawdą | Miernik |
+|---|---|---|
+| **Do premiery (19.11.2026)** | Strona jest na żywo i gotowa na ruch: dopracowana mapa, możliwie dużo znaczników z otwartych źródeł (GTADB, CC BY 4.0), rzetelne poradniki z udokumentowanymi źródłami | build i QA przechodzą; **300+ znaczników z nazwą z gry** (orientacyjnie, zależnie od danych GTADB); każdy poradnik ma „Stan na…" i źródła; Search Console i kontakt uzupełnione (właściciel) |
+| **Tydzień po premierze** | Fakty z gry zastępują doniesienia: kody, regiony, sklepy, broń, kryjówki, znajdźki z własnych obserwacji; usunięte „niepotwierdzone" tam, gdzie się potwierdziło | każda kategoria na mapie ma dane; `kody` i `jak-zarobic` mają treść i są indeksowane |
+| **Miesiąc po premierze** | Własna mapa bazowa (bez ryzyka praw), kafelki, zgłoszenia od graczy | ruch organiczny z Search Console, zgłoszenia moderowane |
+
+Zasady, które nie podlegają negocjacji: tylko fakty ze źródłem, plotki oznaczone jako plotki, bez przecieków i spoilerów, atrybucja CC BY zawsze widoczna.
+
 ## Etap 0 – do 18.11 (blokery startu)
 
 Nic tu nie wymaga programowania, ale bez tego strona nie istnieje dla Google.
