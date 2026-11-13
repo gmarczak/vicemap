@@ -3,7 +3,7 @@
   "use strict";
 
   const CFG = window.VICEMAP_CONFIG || {};
-  const MAPA = CFG.mapa || { obraz: "/mapa.svg", szerokosc: 1000, wysokosc: 1000 };
+  const MAPA = CFG.mapa || { obraz: "/mapa.webp", szerokosc: 3200, wysokosc: 4357 };
   const TRYB_EDYTORA = new URLSearchParams(location.search).has("edytor");
 
   // --- Pamięć przeglądarki (może być wyłączona, więc zawsze w try/catch) ---
@@ -43,8 +43,11 @@
     maxZoom: 3,
     maxBounds: [[-MAPA.wysokosc * 0.25, -MAPA.szerokosc * 0.25], [MAPA.wysokosc * 1.25, MAPA.szerokosc * 1.25]],
     zoomSnap: 0.25,
-    attributionControl: false
+    attributionControl: true
   });
+  map.attributionControl.setPrefix(false).addAttribution(
+    'Mapa bazowa: <a href="https://map.gtadb.org" target="_blank" rel="noopener">Yanis V17 / GTADB</a> (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, zmieniono: przycięcie i zmniejszenie)'
+  );
   L.imageOverlay(MAPA.obraz, granice).addTo(map);
   map.fitBounds(granice);
 

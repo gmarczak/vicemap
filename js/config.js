@@ -1,8 +1,8 @@
 // Ustawienia strony. Puste pole = funkcja wyłączona.
 // Wszystko tutaj jest publiczne (trafia do przeglądarki), więc NIE wpisuj tu sekretów.
 window.VICEMAP_CONFIG = {
-  // Obraz mapy bazowej i jego wymiary w pikselach. Po premierze podmień na własną, przerysowaną mapę.
-  mapa: { obraz: "/mapa.svg", szerokosc: 1000, wysokosc: 1000 },
+  // Obraz mapy bazowej i jego wymiary w pikselach. Mapa Yanis V17 (społecznościowa, CC BY 4.0) z gtadb.org – atrybucja jest w stopce i na mapie.
+  mapa: { obraz: "/mapa.webp", szerokosc: 3200, wysokosc: 4357 },
 
   // Zgłoszenia znaczników trafiają do Supabase (tabela z pliku supabase/zgloszenia.sql).
   // Bez tych dwóch pól formularz otwiera program pocztowy z gotową wiadomością.

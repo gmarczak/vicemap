@@ -3,7 +3,7 @@
   "use strict";
   const kontener = document.getElementById("mini-mapa");
   if (!kontener || !window.L) return;
-  const MAPA = (window.VICEMAP_CONFIG || {}).mapa || { obraz: "/mapa.svg", szerokosc: 1000, wysokosc: 1000 };
+  const MAPA = (window.VICEMAP_CONFIG || {}).mapa || { obraz: "/mapa.webp", szerokosc: 3200, wysokosc: 4357 };
   const x = Number(kontener.dataset.x), y = Number(kontener.dataset.y);
   const map = L.map(kontener, {
     crs: L.CRS.Simple, minZoom: -2, maxZoom: 3, zoomControl: true, attributionControl: false,

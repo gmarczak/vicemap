@@ -80,6 +80,7 @@ ${tresc}
 
   <footer class="stopka">
     <p>Nieoficjalna strona fanowska, niepowiązana z Rockstar Games ani Take-Two Interactive. Grand Theft Auto jest znakiem towarowym Take-Two Interactive.</p>
+    <p>Mapa bazowa: Yanis GTA VI Community Map V17 / <a href="https://map.gtadb.org" rel="noopener">GTADB</a>, licencja <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>; zmiany: przycięcie i zmniejszenie.</p>
     <p>
       <a href="/polityka-prywatnosci.html">Polityka prywatności</a> ·
       <a href="/zglos.html">Zgłoś znacznik</a> ·

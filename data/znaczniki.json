@@ -1,8 +1,8 @@
 [
-  { "id": "przyklad-sklep-1", "kategoria": "sklepy", "nazwa": "Przykładowy sklep", "opis": "Jedzenie i napoje.", "x": 320, "y": 610, "przyklad": true },
-  { "id": "przyklad-sklep-2", "kategoria": "sklepy", "nazwa": "Przykładowy sklep 2", "opis": "Ubrania.", "x": 540, "y": 420, "przyklad": true },
-  { "id": "przyklad-bron-1", "kategoria": "bron", "nazwa": "Przykładowy sklep z bronią", "opis": "Pistolety, amunicja.", "x": 450, "y": 700, "przyklad": true },
-  { "id": "przyklad-znajdzka-1", "kategoria": "znajdzki", "nazwa": "Przykładowa znajdźka", "opis": "Na dachu budynku.", "x": 680, "y": 300, "przyklad": true },
-  { "id": "przyklad-kryjowka-1", "kategoria": "kryjowki", "nazwa": "Przykładowa kryjówka", "opis": "Mieszkanie z garażem.", "x": 400, "y": 520, "przyklad": true },
-  { "id": "przyklad-misja-1", "kategoria": "misje", "nazwa": "Przykładowa misja", "opis": "Start misji fabularnej.", "x": 600, "y": 560, "przyklad": true }
+  {"id": "przyklad-sklep-1", "kategoria": "sklepy", "nazwa": "Przykładowy sklep", "opis": "Jedzenie i napoje.", "x": 2120, "y": 2300, "przyklad": true},
+  {"id": "przyklad-sklep-2", "kategoria": "sklepy", "nazwa": "Przykładowy sklep 2", "opis": "Ubrania.", "x": 2330, "y": 2050, "przyklad": true},
+  {"id": "przyklad-bron-1", "kategoria": "bron", "nazwa": "Przykładowy sklep z bronią", "opis": "Pistolety, amunicja.", "x": 1900, "y": 1700, "przyklad": true},
+  {"id": "przyklad-znajdzka-1", "kategoria": "znajdzki", "nazwa": "Przykładowa znajdźka", "opis": "Na dachu budynku.", "x": 1450, "y": 3300, "przyklad": true},
+  {"id": "przyklad-kryjowka-1", "kategoria": "kryjowki", "nazwa": "Przykładowa kryjówka", "opis": "Mieszkanie z garażem.", "x": 2200, "y": 2600, "przyklad": true},
+  {"id": "przyklad-misja-1", "kategoria": "misje", "nazwa": "Przykładowa misja", "opis": "Start misji fabularnej.", "x": 1700, "y": 2100, "przyklad": true}
 ]
