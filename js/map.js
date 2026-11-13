@@ -214,7 +214,8 @@
         el("span", { className: "pin pin--maly", style: `--kolor:${kat ? kat.kolor : "#999"}`, textContent: kat ? kat.znak : "•", ariaHidden: "true" }),
         kat ? kat.nazwa : z.kategoria),
       z.region ? el("div", { className: "popup__region", textContent: z.region }) : null,
-      z.opis ? el("p", { textContent: z.opis }) : null,
+      // Zdanie o pewności pokazuje blok „Pewność” niżej – w opisie go nie powtarzamy.
+      z.opis ? el("p", { textContent: z.opis.replace(/\s*Zidentyfikowane przez społeczność GTADB, niepotwierdzone przed premierą\.$/, "") }) : null,
       blokDowodu(z),
       z.przyklad ? el("p", { className: "popup__uwaga", textContent: "Przykładowy znacznik – prawdziwe lokalizacje dodamy po premierze." }) : null,
       el("label", { className: "popup__zaliczone" }, pole, el("span", { textContent: "Zaliczone" })),
@@ -391,8 +392,10 @@
       w.licznik.textContent = s.razem ? `${s.zrobione}/${s.razem}` : "0";
       w.li.classList.toggle("filtr--puste", !s.razem);
     }
-    const procent = wszystkie ? Math.round((zrobione / wszystkie) * 100) : 0;
-    postepOgolny.querySelector(".postep__tekst").textContent = `Zaliczone: ${zrobione} z ${wszystkie} (${procent}%)`;
+    const procent = wszystkie ? (zrobione / wszystkie) * 100 : 0;
+    // Przy kilku zaliczonych z kilkuset zaokrąglenie do 0% wyglądałoby jak brak postępu.
+    const tekstProcentu = procent > 0 && procent < 10 ? procent.toFixed(1).replace(".", ",") : String(Math.round(procent));
+    postepOgolny.querySelector(".postep__tekst").textContent = `Zaliczone: ${zrobione} z ${wszystkie} (${tekstProcentu}%)`;
     postepOgolny.querySelector(".postep__pasek span").style.width = procent + "%";
   }
 
