@@ -1,0 +1,19 @@
+GTA VI Map Tiles (CC BY 4.0) — https://map.gtadb.org
+
+Kafelki w katalogu yanis-17/ pochodzą z projektu GTADB (https://gtadb.org), zestaw "yanis,17" (mapa Yanis V17, wersja 17),
+poziomy 0-4. Źródło plików:
+https://raw.githubusercontent.com/rolux/gtadb.org/main/maps/tiles/6/yanis%2C17/{z}/{z}%2C{y}%2C{x}.jpg
+
+Licencja: Creative Commons Uznanie autorstwa 4.0 (CC BY 4.0), https://creativecommons.org/licenses/by/4.0/
+Atrybucja: GTA VI Map Tiles (CC BY 4.0) — https://map.gtadb.org
+
+ZMIANY wprowadzone przez ViceMap (vicemap.pl):
+- Wycięto obszar mapy: zachowano tylko kafelki i fragmenty kafelków leżące na obrazie mapy, tj. od lewej krawędzi do 3760 px
+  obrazu z=3 (5376x5120 px, kafelki x=5..25, y=5..24). Na prawo od tej granicy oryginalne kafelki zawierają panel z legendą,
+  listą autorów i zrzutami z materiałów promocyjnych - ten fragment NIE jest tu publikowany.
+- Kafelki graniczne (ostatnia kolumna z każdego poziomu) zostały przycięte do granicy obszaru mapy i ponownie zapisane
+  jako JPEG (jakość 88). Pozostałe kafelki są bez zmian, bajt w bajt.
+- Pliki są nazwane {x}_{y}.jpg w katalogu poziomu; skrypt: scripts/pobierz-kafelki.py.
+
+ViceMap jest nieoficjalnym projektem fanowskim, niezwiązanym z Rockstar Games ani Take-Two Interactive.
+Licencja CC BY 4.0 dotyczy kafelków mapy; nie obejmuje znaków towarowych ani materiałów Rockstar Games.

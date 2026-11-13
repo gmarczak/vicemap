@@ -71,9 +71,69 @@
     attributionControl: true
   });
   map.attributionControl.setPrefix(false).addAttribution(
-    'Mapa i punkty: <a href="https://map.gtadb.org" target="_blank" rel="noopener">GTADB</a> / Yanis V17, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> (zmieniono)'
+    'Mapa, kafelki i punkty: <a href="https://map.gtadb.org" target="_blank" rel="noopener">GTADB</a> / Yanis V17, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> (zmieniono: przycięcie)'
   );
-  L.imageOverlay(MAPA.obraz, granice).addTo(map);
+  // Podkład: jeden obraz (działa offline i zanim dojdą kafelki), pod kafelkami.
+  map.createPane("podklad").style.zIndex = 150;
+  L.imageOverlay(MAPA.obraz, granice, { pane: "podklad" }).addTo(map);
+
+  // Kafelki GTADB (zestaw yanis,17, poziomy 0-4, wycięte do obszaru mapy; patrz scripts/pobierz-kafelki.py i tiles/LICENSE-TILES.txt).
+  // Układ współrzędnych znaczników zostaje (jednostki obrazu, y od dołu): kafelek (zs, tx, ty) leży na pikselach bezwzględnych
+  // abs = 1280·2^(zs-3) + jednostki·PX3·2^(zs-3), gdzie PX3 = 3760/3200 to piksele obrazu z=3 na jednostkę mapy.
+  // Warstwa rysuje każdy kafelek Leafleta na własnym <canvas> z 1-4 kafelków źródłowych; nic poza widocznymi się nie pobiera.
+  const PX3 = 3760 / 3200;
+  const KAFELKI = "/tiles/yanis-17/";
+  const zakresKafelkow = (zs) => { // indeksy istniejących plików na poziomie źródłowym zs (0-4)
+    const s = Math.pow(2, zs - 3);
+    return { x0: Math.floor(1280 * s / 256), x1: Math.floor((5040 * s - 1) / 256), y0: Math.floor(1280 * s / 256), y1: Math.floor((6400 * s - 1) / 256) };
+  };
+  const obrazyKafelkow = new Map(); // url -> Promise<Image|null>
+  function wczytajKafelek(url) {
+    if (!obrazyKafelkow.has(url)) {
+      if (obrazyKafelkow.size > 80) obrazyKafelkow.delete(obrazyKafelkow.keys().next().value);
+      obrazyKafelkow.set(url, new Promise((ok) => {
+        const im = new Image();
+        im.onload = () => ok(im);
+        im.onerror = () => { obrazyKafelkow.delete(url); ok(null); }; // offline / brak pliku: zostaje podkład
+        im.decoding = "async";
+        im.src = url;
+      }));
+    }
+    return obrazyKafelkow.get(url);
+  }
+  const WarstwaKafelkow = L.GridLayer.extend({
+    options: { tileSize: 256, bounds: L.latLngBounds(granice), maxNativeZoom: 2, keepBuffer: 1, updateWhenZooming: false, pane: "tilePane", attribution: "" },
+    createTile(coords, gotowe) {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2), bok = this.options.tileSize;
+      const plotno = document.createElement("canvas");
+      plotno.width = plotno.height = Math.round(bok * dpr);
+      const sc = Math.pow(2, coords.z);                         // piksele ekranu na jednostkę mapy na tym zoomie
+      const zs = Math.max(0, Math.min(4, Math.ceil(Math.log2(sc * dpr / PX3) + 3 - 1e-9))); // najmniejszy poziom źródłowy nie gorszy niż ekran
+      const sp = PX3 * Math.pow(2, zs - 3);                     // piksele źródła na jednostkę
+      const skala = sc * dpr / sp;                              // piksele płótna na piksel źródła (<= 1, poza zoomem > 4)
+      const baza = 1280 * Math.pow(2, zs - 3);
+      const lewo = baza + (coords.x * bok / sc) * sp;           // bezwzględny piksel źródła przy lewej krawędzi płótna
+      const gora = baza + (MAPA.wysokosc + coords.y * bok / sc) * sp; // y płótna rośnie w dół, y mapy od dołu: y_mapy = -coords.y*bok/sc
+      const r = zakresKafelkow(zs);
+      const tx0 = Math.max(r.x0, Math.floor(lewo / 256)), tx1 = Math.min(r.x1, Math.floor((lewo + bok / sc * sp) / 256));
+      const ty0 = Math.max(r.y0, Math.floor(gora / 256)), ty1 = Math.min(r.y1, Math.floor((gora + bok / sc * sp) / 256));
+      const zadania = [];
+      for (let tx = tx0; tx <= tx1; tx++) for (let ty = ty0; ty <= ty1; ty++) zadania.push([tx, ty, wczytajKafelek(`${KAFELKI}${zs}/${tx}_${ty}.jpg`)]);
+      Promise.all(zadania.map((t) => t[2])).then((obrazy) => {
+        const ctx = plotno.getContext("2d");
+        ctx.imageSmoothingQuality = "high";
+        obrazy.forEach((im, i) => {
+          if (!im) return;
+          const [tx, ty] = zadania[i];
+          // +0.5 px nakładki ukrywa szwy między kafelkami źródłowymi
+          ctx.drawImage(im, (tx * 256 - lewo) * skala, (ty * 256 - gora) * skala, im.naturalWidth * skala + 0.5, im.naturalHeight * skala + 0.5);
+        });
+        gotowe(null, plotno);
+      });
+      return plotno;
+    }
+  });
+  new WarstwaKafelkow().addTo(map);
   map.fitBounds(granice);
   // Nie pozwalaj oddalić mapy bardziej niż do całości widocznej na ekranie.
   const zoomCalosci = map.getZoom();

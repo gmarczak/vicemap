@@ -25,6 +25,9 @@ const DODATKOWE = [
 ];
 // Pliki, które się nie zmieniają: raz zapisane nie są pobierane ponownie (mapa.webp ma ok. 900 KB).
 const NIEZMIENNE = ["/mapa.webp", "/vendor/"];
+const KAFELKI = "vicemap-kafelki"; // osobny cache kafelków mapy (nie jest prekaszowany, wypełnia się w locie)
+const LIMIT_KAFELKOW = 800;
+let zapisanoKafelkow = 0;
 const LIMIT_WPISOW = 120; // ponad tyle usuwamy najstarsze odwiedzone strony
 
 // Klucz bez ?query i #hash: stan mapy w URL (?x=..&y=..) nie mnoży wpisów i dopasowuje się do zapisanej strony.
@@ -57,16 +60,39 @@ self.addEventListener("install", (e) => {
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys()
-      .then((klucze) => Promise.all(klucze.filter((k) => k !== WERSJA).map((k) => caches.delete(k))))
+      .then((klucze) => Promise.all(klucze.filter((k) => k !== WERSJA && k !== KAFELKI).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
+
+// Kafelki: z pamięci, a gdy brak – z sieci i zapis w locie. Ponad LIMIT_KAFELKOW usuwamy najstarsze. Bez sieci i bez wpisu: błąd,
+// a mapa zostaje na podkładzie mapa.webp.
+async function kafelek(e) {
+  const zadanie = e.request;
+  const c = await caches.open(KAFELKI);
+  const zapisane = await c.match(zadanie.url);
+  if (zapisane) return zapisane;
+  const odp = await fetch(zadanie);
+  if (odp.status === 200) {
+    e.waitUntil((async () => {
+      try {
+        await c.put(zadanie.url, odp.clone());
+        if (++zapisanoKafelkow % 25 !== 0) return;
+        const wpisy = await c.keys();
+        for (const w of wpisy.slice(0, Math.max(0, wpisy.length - LIMIT_KAFELKOW))) await c.delete(w);
+      } catch (err) { /* brak miejsca (quota) – działamy dalej bez zapisu */ }
+    })());
+  }
+  return odp;
+}
 
 self.addEventListener("fetch", (e) => {
   const zadanie = e.request;
   const url = new URL(zadanie.url);
   if (zadanie.method !== "GET" || url.origin !== location.origin) return;
   if (zadanie.headers.has("range")) return; // odpowiedzi 206 nie nadają się do cache
+
+  if (url.pathname.startsWith("/tiles/") && url.pathname.endsWith(".jpg")) { e.respondWith(kafelek(e).catch(() => Response.error())); return; }
 
   const nawigacja = zadanie.mode === "navigate";
   if (nawigacja || url.pathname.startsWith("/data/")) {
