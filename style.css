@@ -238,3 +238,7 @@ nav a { display: inline-flex; align-items: center; min-height: 44px; }
 /* Strona znacznika: poprzedni/następny w kategorii */
 .poprzedni-nastepny { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 1em 0; }
 .poprzedni-nastepny a { display: inline-flex; align-items: center; min-height: 44px; }
+
+/* Mobile: nagłówek w dwóch wierszach; okruszki bez powiększonych celów */
+@media (max-width: 760px) { :root { --wys-naglowka: 94px; } }
+.okruszki a { display: inline; min-height: 0; }
