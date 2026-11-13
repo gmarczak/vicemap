@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>ViceMap – interaktywna mapa GTA 6 po polsku</title>
-  <meta name="description" content="Interaktywna mapa GTA 6 po polsku: kryjówki, sklepy, broń, znajdźki i tracker postępu do 100%. Działa na telefonie obok konsoli.">
+  <meta name="description" content="Interaktywna mapa GTA 6 po polsku: 390 miejsc Leonidy (sklepy, hotele, transport, punkty orientacyjne), wyszukiwarka, ulubione i tracker postępu. Działa na telefonie.">
   <link rel="canonical" href="https://vicemap.pl/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ViceMap">
   <meta property="og:title" content="ViceMap – interaktywna mapa GTA 6 po polsku">
-  <meta property="og:description" content="Kryjówki, sklepy, broń, znajdźki i tracker postępu do 100%. Po polsku, na telefon.">
+  <meta property="og:description" content="390 miejsc Leonidy, wyszukiwarka, ulubione, notatki i tracker postępu. Po polsku, na telefon.">
   <meta property="og:url" content="https://vicemap.pl/">
   <meta property="og:image" content="https://vicemap.pl/img/og.png">
   <meta name="theme-color" content="#12101c">
@@ -18,6 +18,7 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preload" as="image" href="/mapa.webp" type="image/webp">
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="/vendor/leaflet.markercluster-1.5.3/MarkerCluster.css">
   <link rel="stylesheet" href="/style.css">
   <script type="application/ld+json">
   {
@@ -42,14 +43,21 @@
 
   <div class="uklad-mapy">
     <aside id="panel" class="panel" aria-label="Filtry i wyszukiwarka">
+      <div class="panel__uchwyt" aria-hidden="true"></div>
       <label class="ukryta-etykieta" for="szukaj">Szukaj na mapie</label>
-      <input id="szukaj" class="szukaj" type="search" enterkeyhint="search" aria-controls="wyniki" placeholder="Szukaj: kryjówka, sklep, broń…" autocomplete="off">
-      <ul id="wyniki" class="wyniki" aria-label="Wyniki wyszukiwania" aria-live="polite"></ul>
+      <input id="szukaj" class="szukaj" type="search" enterkeyhint="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="wyniki" placeholder="Szukaj: nazwa, region, kategoria…" autocomplete="off" spellcheck="false">
+      <ul id="wyniki" class="wyniki" role="listbox" aria-label="Podpowiedzi wyszukiwania" hidden></ul>
+      <p id="wyniki-status" class="ukryta-etykieta" role="status" aria-live="polite"></p>
 
       <div id="postep" class="postep">
         <div class="postep__tekst">Zaliczone: 0 z 0 (0%)</div>
         <div class="postep__pasek"><span></span></div>
       </div>
+
+      <section id="sekcja-regiony" hidden>
+        <h2 class="panel__tytul">Regiony</h2>
+        <ul id="regiony" class="chipy" aria-label="Skocz do regionu"></ul>
+      </section>
 
       <h2 class="panel__tytul">Kategorie</h2>
       <ul id="filtry" class="filtry" aria-label="Kategorie znaczników"></ul>
@@ -58,7 +66,10 @@
         <button type="button" id="ukryj-wszystkie" class="przycisk przycisk--maly">Ukryj wszystkie</button>
       </div>
       <label class="przelacznik"><input type="checkbox" id="ukryj-zaliczone"> Ukryj zaliczone</label>
-      <p class="panel__uwaga">Postęp zapisuje się w tej przeglądarce. Kategoria „Misje fabularne” jest domyślnie ukryta, żeby nie zdradzać fabuły.</p>
+      <label class="przelacznik"><input type="checkbox" id="tylko-ulubione"> Tylko ulubione</label>
+      <h2 class="panel__tytul">Ulubione<span id="ulubione-licznik"></span></h2>
+      <ul id="ulubione" class="lista-panelu" aria-label="Twoje ulubione znaczniki"></ul>
+      <p class="panel__uwaga">Postęp, ulubione i notatki zapisują się w tej przeglądarce (są prywatne). Kategoria „Misje fabularne” jest domyślnie ukryta, żeby nie zdradzać fabuły.</p>
       <div class="panel__przyciski">
         <button type="button" id="kopiuj-widok" class="przycisk przycisk--maly">Kopiuj link do widoku</button>
         <button type="button" id="pobierz-postep" class="przycisk przycisk--maly">Pobierz postęp</button>
@@ -66,18 +77,30 @@
       </div>
       <p id="komunikat-postepu" class="panel__uwaga" role="status"></p>
       <button type="button" id="resetuj-postep" class="link-przycisk">Wyczyść postęp</button>
+      <details class="skroty">
+        <summary>Skróty klawiaturowe</summary>
+        <dl>
+          <dt><kbd>/</kbd></dt><dd>szukaj na mapie</dd>
+          <dt><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd></dt><dd>wybór podpowiedzi</dd>
+          <dt><kbd>f</kbd></dt><dd>filtry kategorii</dd>
+          <dt><kbd>+</kbd> <kbd>−</kbd></dt><dd>przybliż / oddal (gdy mapa ma fokus)</dd>
+          <dt><kbd>Esc</kbd></dt><dd>zamknij dymek, podpowiedzi lub panel</dd>
+        </dl>
+      </details>
     </aside>
 
     <div class="mapa-kontener">
       <div id="map" role="application" aria-label="Interaktywna mapa GTA 6"></div>
+      <p id="ogloszenia" class="ukryta-etykieta" role="status" aria-live="polite"></p>
       <button type="button" id="przelacz-panel" class="przycisk przycisk--glowny przelacz-panel" aria-controls="panel" aria-expanded="false">Filtry i szukaj</button>
     </div>
   </div>
 
   <main class="tresc">
     <h1>Interaktywna mapa GTA 6 po polsku</h1>
-    <p>ViceMap to nieoficjalna mapa stanu Leonida z GTA 6: kryjówki, sklepy, broń, pojazdy, znajdźki i aktywności poboczne. Zaznaczaj zaliczone miejsca, a licznik pokaże, ile brakuje do 100%. Mapa działa na telefonie, więc możesz ją mieć obok konsoli.</p>
-    <p><strong>Stan na 12 listopada 2026:</strong> GTA 6 wychodzi 19 listopada 2026. Znaczniki na mapie są przykładowe – prawdziwe lokalizacje dodajemy od dnia premiery. <a href="/zglos.html">Znalazłeś coś w grze? Zgłoś znacznik.</a></p>
+    <p>ViceMap to nieoficjalna mapa stanu Leonida z GTA 6: sklepy, lokale, hotele, transport, służby i punkty orientacyjne, a od premiery także kryjówki, znajdźki i aktywności poboczne. Zaznaczaj zaliczone miejsca, a licznik pokaże, ile brakuje do 100%. Mapa działa na telefonie, więc możesz ją mieć obok konsoli.</p>
+    <p><strong>Stan na 13 listopada 2026:</strong> GTA 6 wychodzi 19 listopada 2026. Na mapie jest 390 miejsc z <a href="https://map.gtadb.org" rel="noopener">GTADB</a> (licencja CC BY 4.0): sklepy, lokale, hotele, stacje, budowle i znaki z trailerów rozpoznane przez społeczność – niepotwierdzone przed premierą. Kryjówki, znajdźki i pozostałe sklepy z bronią dodajemy od dnia premiery. <a href="/zglos.html">Znalazłeś coś w grze? Zgłoś znacznik.</a></p>
+    <p>Mapa obejmuje stan Leonida: Vice City, Leonida Keys, Grassrivers, Port Gellhorn, Ambrosia i Mount Kalaga. Więcej o każdym z nich w poradniku <a href="/poradniki/regiony.html">regiony Leonidy</a>.</p>
 
     <h2>Poradniki</h2>
     <ul class="lista-poradnikow">
@@ -103,6 +126,7 @@
 
   <script src="/js/config.js"></script>
   <script src="/vendor/leaflet/leaflet.js"></script>
+  <script src="/vendor/leaflet.markercluster-1.5.3/leaflet.markercluster.js"></script>
   <script src="/js/map.js"></script>
   <script src="/js/strona.js"></script>
 </body>
