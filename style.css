@@ -9,7 +9,7 @@
   --akcent: #ff5fa2;
   --akcent-2: #4fc3f7;
   --promien: 10px;
-  --wys-naglowka: 56px;
+  --wys-naglowka: 61px; /* realna wysokość nagłówka (44 px linki + padding + ramka): mapa mieści się w oknie bez przewijania strony */
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -362,3 +362,10 @@ nav a { display: inline-flex; align-items: center; min-height: 44px; }
 /* .leaflet-bar a ma background: (skrót), który zerowałby ikonę wtyczki */
 .leaflet-bar a.leaflet-fullscreen-icon { background-image: var(--fullscreen-icon-enter); background-size: 26px 26px; background-repeat: no-repeat; background-position: center; }
 .leaflet-bar a.leaflet-fullscreen-icon.leaflet-fullscreen-on { background-image: var(--fullscreen-icon-exit); }
+
+/* Wąskie telefony (360 px): nagłówek z logo i czterema linkami mieści się w jednym wierszu */
+@media (max-width: 400px) {
+  nav, nav a { gap: 8px; }
+  nav { font-size: .88rem; }
+  .logo { font-size: 1.15rem; }
+}

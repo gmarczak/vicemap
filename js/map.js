@@ -285,7 +285,11 @@
     };
     pole.addEventListener("input", () => { clearTimeout(czasZapisu); oczekujaceNotatki.add(zapisz); czasZapisu = setTimeout(zapisz, 400); });
     pole.addEventListener("blur", () => { if (pole.value.trim() !== (notatki[z.id] || "")) zapisz(); });
-    pole.addEventListener("keydown", (e) => e.stopPropagation()); // strzałki i +/- w polu nie mają ruszać mapą
+    pole.addEventListener("keydown", (e) => {
+      e.stopPropagation(); // strzałki i +/- w polu nie mają ruszać mapą
+      // Esc w polu: zapisz wpisany tekst i zamknij dymek (fokus wraca na znacznik, jak przy Esc poza polem)
+      if (e.key === "Escape") { if (pole.value.trim() !== (notatki[z.id] || "")) zapisz(); map.closePopup(); }
+    });
     return el("details", { className: "popup__notatki" },
       el("summary", null, "Moja notatka", znak),
       pole,
