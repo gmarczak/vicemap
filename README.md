@@ -99,8 +99,7 @@ Bez Supabase formularz otwiera program pocztowy z gotową wiadomością na adres
 
 ## Przed startem uzupełnij
 
-- [ ] `polityka-prywatnosci.html` – administrator danych, e-mail, hosting (miejsca oznaczone `UZUPEŁNIJ`)
-- [ ] `js/config.js` – `kontaktEmail`, potem Supabase, AdSense, wsparcie
+- [ ] `js/config.js` – AdSense, wsparcie (e-mail i Supabase są wpisane)
 - [ ] `poradniki/jak-zarobic.html` – ma `noindex`, dopóki nie ma prawdziwej treści; po uzupełnieniu usuń ten meta tag i uruchom build
 
 ## Wdrożenie

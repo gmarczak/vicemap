@@ -1,6 +1,6 @@
 # Plan rozwoju ViceMap
 
-Stan na 13.11.2026. Premiera GTA 6: **19.11.2026** (wg `poradniki/premiera.html`).
+Stan na 14.11.2026. Premiera GTA 6: **19.11.2026** (wg `poradniki/premiera.html`).
 Strona ma już: mapę z filtrami, grupowaniem znaczników, wyszukiwarką, trackerem postępu, ulubionymi i prywatnymi notatkami (z eksportem/importem), setki niepotwierdzonych punktów z GTADB (CC BY 4.0), zgłoszenia znaczników, 13 poradników, SEO (canonical, OG, sitemap), PWA, build i konfigurację Vercela. Opis techniczny jest w [README.md](README.md) – ten plik mówi tylko, **co zostało do zrobienia**.
 
 ## Cel projektu
@@ -19,10 +19,11 @@ Zasady, które nie podlegają negocjacji: tylko fakty ze źródłem, plotki ozna
 
 Nic tu nie wymaga programowania, ale bez tego strona nie istnieje dla Google.
 
-- [ ] **Wdrożenie na vicemap.pl** – projekt na Vercelu, domena, HTTPS. Sprawdzić, czy build (`node scripts/build.mjs`) przechodzi na Vercelu.
-- [ ] **`js/config.js`: `kontaktEmail`** – bez niego formularz zgłoszeń nie ma dokąd pisać.
-- [ ] **`polityka-prywatnosci.html`** – dwa miejsca oznaczone `UZUPEŁNIJ` (administrator danych, e-mail, hosting).
-- [ ] **Supabase** – uruchomić `supabase/zgloszenia.sql`, wpisać `supabaseUrl` i klucz **anon** (nigdy `service_role`).
+- [x] **Wdrożenie na vicemap.pl** – działa na Vercelu (sprawdzone 14.11.2026).
+- [x] **`js/config.js`: `kontaktEmail`** – wpisany `kontakt@vicemap.pl`.
+- [ ] **Skrzynka `kontakt@vicemap.pl`** – domena nie ma rekordów MX (stan na 14.11.2026), więc poczta na ten adres nie dochodzi. Założyć skrzynkę lub przekierowanie u rejestratora (home.pl).
+- [x] **`polityka-prywatnosci.html`** – administrator (ViceMap), e-mail i hosting wpisane.
+- [x] **Supabase** – projekt `vicemap` (eu-central-1), tabela `zgloszenia` z RLS, klucz publiczny w `js/config.js`; formularz przetestowany 14.11.2026.
 - [ ] **Google Search Console** – zweryfikować domenę, zgłosić `sitemap.xml`. Indeksacja trwa kilka dni, więc to najpilniejsze po wdrożeniu.
 - [ ] **Analityka** – cokolwiek lekkiego, żeby po premierze wiedzieć, które strony ciągną ruch.
 - [ ] **Test na telefonie** – mapa, filtry, tracker i „Dodaj do ekranu głównego" (większość ruchu będzie z mobile).

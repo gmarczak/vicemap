@@ -6,9 +6,9 @@ window.VICEMAP_CONFIG = {
 
   // Zgłoszenia znaczników trafiają do Supabase (tabela z pliku supabase/zgloszenia.sql).
   // Bez tych dwóch pól formularz otwiera program pocztowy z gotową wiadomością.
-  supabaseUrl: "",       // np. "https://abcd1234.supabase.co"
-  supabaseAnonKey: "",   // klucz publiczny "anon" / "publishable", NIGDY service_role
-  kontaktEmail: "",      // adres na zgłoszenia i kontakt, np. "kontakt@vicemap.pl"
+  supabaseUrl: "https://llumnmrxthvcvlqqhsho.supabase.co",
+  supabaseAnonKey: "sb_publishable_SPOeyhaoTG_ulqkMD1PFvw_vrHaL827",   // klucz publiczny "anon" / "publishable", NIGDY service_role
+  kontaktEmail: "kontakt@vicemap.pl",    // adres na zgłoszenia i kontakt, np. "kontakt@vicemap.pl"
 
   // Reklamy Google AdSense ładują się dopiero po zgodzie użytkownika. Np. "ca-pub-1234567890".
   adsenseClient: "",
